@@ -19,7 +19,12 @@ let appData = {
 };
 
 let currentCategory = 1;
-const USER_ID = 'user1'; // You can change this or add user authentication later
+// Get or create unique user ID
+let USER_ID = localStorage.getItem('nexus_user_id');
+if (!USER_ID) {
+    USER_ID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    localStorage.setItem('nexus_user_id', USER_ID);
+}
 
 // Save data to Firebase
 function saveData() {
