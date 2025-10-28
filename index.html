@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus - Routine Planner</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9D00FF">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nexus">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="./styles-new.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Progress Header -->
+        <div class="progress-header">
+            <div class="stat-item">
+                <div class="stat-label">Points</div>
+                <div class="stat-value" id="totalPoints">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Level</div>
+                <div class="stat-value" id="level">1</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Rank</div>
+                <div class="stat-value rank" id="rank">E</div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-text" id="progressText">0/1000</div>
+        </div>
+
+        <!-- Category Navigation -->
+        <div class="category-nav">
+            <button class="category-btn active" data-category="1">
+                <span>Study</span>
+                <span class="task-count" id="count-1">0</span>
+            </button>
+            <button class="category-btn" data-category="2">
+                <span>Physical Health</span>
+                <span class="task-count" id="count-2">0</span>
+            </button>
+            <button class="category-btn" data-category="3">
+                <span>Creativity</span>
+                <span class="task-count" id="count-3">0</span>
+            </button>
+            <button class="category-btn" data-category="4">
+                <span>Others</span>
+                <span class="task-count" id="count-4">0</span>
+            </button>
+        </div>
+
+        <!-- Add Task Section -->
+        <div class="add-task-section">
+            <input type="text" id="taskInput" placeholder="Enter task name..." />
+            <input type="number" id="pointsInput" placeholder="Points" value="10" min="1" />
+            <button id="addTaskBtn" class="add-btn">Add Task</button>
+        </div>
+
+        <!-- Task List -->
+        <div class="task-list" id="taskList"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <!-- PWA Install Script -->
+    <script src="install.js"></script>
+    
+    <!-- Main App Script with Firebase -->
+    <script src="script.js"></script>
+</body>
+</html>
