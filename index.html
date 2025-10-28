@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Routine Planner</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header with Points, Level, and Rank -->
+        <header class="stats-header">
+            <div class="stat-card">
+                <div class="stat-label">Points</div>
+                <div class="stat-value glow" id="totalPoints">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Level</div>
+                <div class="stat-value glow" id="level">1</div>
+            </div>
+            <div class="stat-card rank-card">
+                <div class="stat-label">Rank</div>
+                <div class="stat-value rank-badge glow" id="rank">E</div>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-label">
+                <span>Next Level</span>
+                <span id="progressText">0 / 1000</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Category Navigation -->
+        <nav class="category-nav">
+            <button class="category-btn active" data-category="1">
+                <span class="category-name">Study</span>
+                <span class="task-count" id="count-1">0</span>
+            </button>
+            <button class="category-btn" data-category="2">
+                <span class="category-name">Physical Health</span>
+                <span class="task-count" id="count-2">0</span>
+            </button>
+            <button class="category-btn" data-category="3">
+                <span class="category-name">Creativity</span>
+                <span class="task-count" id="count-3">0</span>
+            </button>
+            <button class="category-btn" data-category="4">
+                <span class="category-name">Others</span>
+                <span class="task-count" id="count-4">0</span>
+            </button>
+        </nav>
+
+        <!-- Add Task Section -->
+        <div class="add-task-section">
+            <h2 class="section-title" id="categoryTitle">Study</h2>
+            <div class="add-task-form">
+                <input 
+                    type="text" 
+                    id="taskNameInput" 
+                    placeholder="Enter task name..." 
+                    class="task-input"
+                />
+                <input 
+                    type="number" 
+                    id="taskPointsInput" 
+                    placeholder="Points" 
+                    value="10" 
+                    min="1"
+                    class="points-input"
+                />
+                <button class="add-btn" id="addTaskBtn">
+                    <span class="btn-icon">+</span>
+                    <span>Add Task</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Task List -->
+        <div class="task-list" id="taskList">
+            <!-- Tasks will be dynamically inserted here -->
+        </div>
+
+        <!-- Points Animation -->
+        <div class="points-animation" id="pointsAnimation"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
