@@ -35,6 +35,57 @@ function saveData() {
     });
 }
 
+// ==================== DAILY RESET SYSTEM ====================
+function resetDailyTasks() {
+  const today = new Date().toDateString();
+  const lastResetDate = localStorage.getItem('lastResetDate');
+  
+  if (lastResetDate !== today) {
+    appData.tasks.forEach(task => {
+      if (task.isDone) {
+        task.isDone = false;
+        task.penaltyCount = 0;
+        task.createdAt = Date.now();
+      }
+    });
+    
+    localStorage.setItem('lastResetDate', today);
+    console.log('Daily tasks reset!');
+    saveData();
+  }
+}
+
+// ==================== PENALTY SYSTEM ====================
+function checkOverdueTasksAndApplyPenalties() {
+  const now = Date.now();
+  const PENALTY_POINTS = 50;
+  const PENALTY_INTERVAL = 24 * 60 * 60 * 1000;
+  
+  appData.tasks.forEach(task => {
+    if (!task.isDone && task.createdAt) {
+      const timeSinceLastReset = now - task.createdAt;
+      
+      if (timeSinceLastReset > PENALTY_INTERVAL) {
+        const daysOverdue = Math.floor(timeSinceLastReset / PENALTY_INTERVAL);
+        
+        if (!task.penaltyCount) {
+          task.penaltyCount = 0;
+        }
+        
+        if (daysOverdue > task.penaltyCount) {
+          const newPenalties = daysOverdue - task.penaltyCount;
+          const totalPenalty = newPenalties * PENALTY_POINTS;
+          
+          appData.totalPoints -= totalPenalty;
+          task.penaltyCount = daysOverdue;
+          
+          console.log(`Penalty: -${totalPenalty} points for "${task.name}"`);
+        }
+      }
+    }
+  });
+}⁹
+
 // Load data from Firebase
 function loadData() {
     database.ref('users/' + USER_ID).once('value', (snapshot) => {
@@ -43,8 +94,11 @@ function loadData() {
             appData.totalPoints = data.totalPoints || 0;
             appData.tasks = data.tasks || [];
         }
-        updateDisplay();
-    });
+        resetDailyTasks();  // ADD THIS LINE
+    checkOverdueTasksAndApplyPenalties();  // ADD THIS LINE
+    updateDisplay();
+    saveData();  // ADD THIS LINE
+  });
 }
 
 // Calculate level and rank
@@ -244,3 +298,4 @@ document.getElementById('taskList').addEventListener('click', (e) => {
 
 // Initialize
 loadData();
+
