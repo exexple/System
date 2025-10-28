@@ -269,3 +269,24 @@ body {
         grid-template-columns: 1fr;
     }
   }
+
+  /* Install Button */
+.install-button {
+    background: linear-gradient(135deg, #9D00FF 0%, #C77DFF 100%);
+    border: none;
+    color: #ffffff;
+    padding: 15px 30px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    width: 100%;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 20px rgba(157, 0, 255, 0.5);
+    transition: all 0.3s ease;
+}
+
+.install-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(157, 0, 255, 0.7);
+}
