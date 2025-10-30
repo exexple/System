@@ -445,30 +445,61 @@ function switchCategory(categoryId) {
     renderTasks();
 }
 
-document.getElementById('addTaskBtn').addEventListener('click', addTask);
-document.getElementById('taskInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addTask();
-});
-document.querySelectorAll('.category-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        switchCategory(parseInt(btn.dataset.category));
-    });
-});
-document.getElementById('taskList').addEventListener('click', (e) => {
-    const id = parseInt(e.target.dataset.id);
-    if (e.target.classList.contains('task-checkbox')) {
-        toggleTask(id);
-    } else if (e.target.classList.contains('delete-btn')) {
-        if (confirm('Delete this task?')) {
-            deleteTask(id);
-        }
-    } else if (e.target.classList.contains('edit-btn')) {
-        editTask(id);
-    }
-});
-const watchAdBtn = document.getElementById('watchAdBtn');
-if (watchAdBtn) {
-    watchAdBtn.addEventListener('click', watchRewardAd);
+// Wait for DOM to be fully loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+    initializeApp();
 }
-console.log('🎮 NEXUS: Phase A Loaded - Ready for Testing!');
-loadData();
+
+function initializeApp() {
+    console.log('🎮 Initializing NEXUS App...');
+    
+    // Add Task
+    const addTaskBtn = document.getElementById('addTaskBtn');
+    if (addTaskBtn) {
+        addTaskBtn.addEventListener('click', addTask);
+        console.log('✅ Add Task button ready');
+    }
+    
+    // Task Input Enter Key
+    const taskInput = document.getElementById('taskInput');
+    if (taskInput) {
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTask();
+        });
+    }
+    
+    // Category Buttons
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            switchCategory(parseInt(btn.dataset.category));
+        });
+    });
+    
+    // Task List
+    const taskList = document.getElementById('taskList');
+    if (taskList) {
+        taskList.addEventListener('click', (e) => {
+            const id = parseInt(e.target.dataset.id);
+            if (e.target.classList.contains('task-checkbox')) {
+                toggleTask(id);
+            } else if (e.target.classList.contains('delete-btn')) {
+                if (confirm('Delete this task?')) {
+                    deleteTask(id);
+                }
+            } else if (e.target.classList.contains('edit-btn')) {
+                editTask(id);
+            }
+        });
+    }
+    
+    // Watch Ad Button
+    const watchAdBtn = document.getElementById('watchAdBtn');
+    if (watchAdBtn) {
+        watchAdBtn.addEventListener('click', watchRewardAd);
+    }
+    
+    console.log('🎮 NEXUS: Phase A Loaded - Ready for Testing!');
+    loadData();
+}
