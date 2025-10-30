@@ -170,7 +170,7 @@ You now have ${days} days of premium!
 }
 
 function getAIQueryLimit() {
-    if (appData.premiumStatus === 'paid') return Infinity;
+    if (appData.premiumStatus === 'paid') return 20;
     if (appData.premiumStatus === 'ad-premium') return 8;
     return 5;
 }
@@ -184,10 +184,10 @@ function checkAIQueryLimit() {
     }
     const limit = getAIQueryLimit();
     if (appData.aiQueriesUsedToday >= limit) {
-        const upgradeMsg = appData.premiumStatus === 'free' ? 'Watch reward ads or upgrade to premium!' : 'Upgrade to paid premium for unlimited!';
+        const upgradeMsg = appData.premiumStatus === 'free' ? 'Watch reward ads or upgrade to premium!' : 'Upgrade to paid premium for 20!';
         alert(`🤖 AI Query Limit!
 
-Used: ${appData.aiQueriesUsedToday}/${limit === Infinity ? '∞' : limit}
+Used: ${appData.aiQueriesUsedToday}/${limit}
 
 ${upgradeMsg}`);
         return false;
