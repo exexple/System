@@ -1,0 +1,345 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: #fff;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #9370DB;
+    margin-bottom: 10px;
+    text-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+}
+
+header p {
+    color: #aaa;
+    font-size: 0.95em;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: rgba(147, 112, 219, 0.1);
+    border: 1px solid #9370DB;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #9370DB;
+}
+
+.rank-display {
+    background: linear-gradient(135deg, #9370DB 0%, #BA55D3 100%);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(147, 112, 219, 0.3);
+}
+
+.progress-container {
+    margin-bottom: 20px;
+}
+
+.progress-label {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #9370DB;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #9370DB, #BA55D3);
+    transition: width 0.3s ease;
+}
+
+.categories {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.category-btn {
+    padding: 8px 15px;
+    background: rgba(147, 112, 219, 0.2);
+    border: 1px solid #9370DB;
+    color: #fff;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s;
+    font-size: 0.9em;
+}
+
+.category-btn.active {
+    background: #9370DB;
+    border-color: #BA55D3;
+    box-shadow: 0 0 10px rgba(147, 112, 219, 0.5);
+}
+
+.category-btn:hover {
+    background: #9370DB;
+    transform: scale(1.05);
+}
+
+#task-list {
+    margin-bottom: 20px;
+    min-height: 50px;
+}
+
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(147, 112, 219, 0.1);
+    border: 1px solid #9370DB;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: all 0.3s;
+}
+
+.task-item:hover {
+    background: rgba(147, 112, 219, 0.2);
+    transform: translateX(5px);
+}
+
+.task-item.completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.task-item input[type="checkbox"] {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    accent-color: #9370DB;
+}
+
+.task-content {
+    flex: 1;
+}
+
+.task-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.task-actions button {
+    padding: 5px 10px;
+    background: rgba(147, 112, 219, 0.3);
+    border: 1px solid #9370DB;
+    color: #fff;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.2s;
+}
+
+.task-actions button:hover {
+    background: #9370DB;
+}
+
+.form-container {
+    background: rgba(147, 112, 219, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #9370DB;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    flex: 1;
+}
+
+.select-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+input[type="text"],
+select {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #9370DB;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 1em;
+    transition: all 0.3s;
+}
+
+input[type="text"]::placeholder,
+select {
+    color: #aaa;
+}
+
+input[type="text"]:focus,
+select:focus {
+    background: rgba(147, 112, 219, 0.2);
+    border-color: #BA55D3;
+    outline: none;
+    box-shadow: 0 0 10px rgba(147, 112, 219, 0.3);
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #9370DB, #BA55D3);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(147, 112, 219, 0.5);
+}
+
+.btn-primary:active {
+    transform: scale(0.98);
+}
+
+.premium-container {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #FFD700;
+}
+
+.premium-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-secondary {
+    padding: 10px 15px;
+    background: rgba(147, 112, 219, 0.2);
+    border: 1px solid #9370DB;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    background: #9370DB;
+    border-color: #BA55D3;
+    transform: scale(1.02);
+}
+
+.btn-secondary:active {
+    transform: scale(0.98);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #aaa;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2em;
+    }
+    
+    .stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .select-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .premium-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
+.rank-up-notification {
+    animation: slideIn 0.3s ease-out;
+  }
