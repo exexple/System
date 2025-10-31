@@ -1,6 +1,6 @@
 {
-  "name": "Nexus - Routine Planner",
-  "short_name": "Nexus",
+  "name": "ATHERION - Routine Planner",
+  "short_name": "ATHERION",
   "description": "Game-like routine planner with points, levels, and ranks",
   "start_url": "./index.html",
   "display": "standalone",
