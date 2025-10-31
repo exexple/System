@@ -1,282 +1,596 @@
-// ==================== NEXUS PHASE A - WORKING VERSION ====================
-const firebaseConfig = {
-  apiKey: "AIzaSyAle5y1wcHMMyDxu-ppPkMfM5hFQNKahOQ",
-  authDomain: "routine-planner-daf33.firebaseapp.com",
-  databaseURL: "https://routine-planner-daf33-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "routine-planner-daf33",
-  storageBucket: "routine-planner-daf33.firebasestorage.app",
-  messagingSenderId: "62028696155",
-  appId: "1:62028696155:web:5e6b1896e0f60eacb40d7e"
-};
+/**
+ * NEXUS - SELF-DEVELOPMENT RANK-UP APP
+ * Phase A: Task Management + Dynamic Points System
+ * Version: 2.0 (Dynamic +150 points per rank)
+ * Created: Oct 31, 2025
+ */
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+// ============================================================================
+// IMPORTS - Import rankSystem.js functions
+// ============================================================================
+import {
+    calculateRankAndLevel,
+    getPointsPerLevel,
+    getPointsNeededForRank,
+    formatNumber,
+    RANKS,
+    RANK_COLORS
+} from './rankSystem.js';
 
-const RANKS = ['E', 'EE', 'EEE', 'D', 'DD', 'DDD', 'C', 'CC', 'CCC', 'B', 'BB', 'BBB', 'A', 'AA', 'AAA', 'S', 'SS', 'SSS'];
-const PRIORITY_POINTS = { high: 100, medium: 50, low: 30 };
-const PRIORITY_PENALTIES = { high: 50, medium: 25, low: 15 };
-const REWARD_AD_CONFIG = { adsRequired: 10, premiumDays: 7 };
+// ============================================================================
+// GLOBAL STATE
+// ============================================================================
 
-let appData = {
-    totalPoints: 0,
-    tasks: [],
-    premiumStatus: 'free',
-    premiumExpiry: null,
-    adsWatched: 0,
-    aiQueriesUsedToday: 0,
-    lastAiResetDate: null,
-    lastResetDate: null
-};
+let tasks = [];
+let userPoints = 0;
+let userPremiumAds = 0;
+let isPremium = false;
+let streakDays = 0;
+let lastLoginDate = new Date().toDateString();
 
-let currentCategory = 1;
-let USER_ID = localStorage.getItem('nexus_user_id');
-if (!USER_ID) {
-    USER_ID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-    localStorage.setItem('nexus_user_id', USER_ID);
-}
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
-// RESET SYSTEM
-function checkMidnightReset() {
-    const today = new Date().toDateString();
-    if (appData.lastResetDate !== today) {
-        console.log('🌅 New day! Applying penalties...');
-        let penalties = 0;
-        appData.tasks.forEach(task => {
-            if (!task.isDone) {
-                const pen = PRIORITY_PENALTIES[task.priority];
-                appData.totalPoints -= pen;
-                penalties += pen;
-                console.log(`⚠️ -${pen} for ${task.name}`);
-            }
-            task.isDone = false;
-            task.doneTimestamp = null;
-        });
-        appData.lastResetDate = today;
-        if (penalties > 0) {
-            alert(`⚠️ MIDNIGHT PENALTIES!
-
-Lost ${penalties} points for incomplete tasks.
-
-💡 Complete tasks daily!`);
-        }
-        saveData();
-    }
-}
-
-function formatPoints(points) {
-    if (points >= 1000000) return (points / 1000000).toFixed(1).replace('.0', '') + 'M';
-    if (points >= 1000) return (points / 1000).toFixed(1).replace('.0', '') + 'k';
-    return points.toString();
-}
-
-function calculateLevel(points) { return Math.floor(points / 1000); }
-function calculateRank(level) { return RANKS[Math.min(Math.floor(level / 10), RANKS.length - 1)]; }
-
-function updateDisplay() {
-    const level = calculateLevel(appData.totalPoints);
-    const rank = calculateRank(level);
-    const pointsInLevel = appData.totalPoints % 1000;
-    const progress = (pointsInLevel / 1000) * 100;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎮 NEXUS App Loading...');
     
-    document.getElementById('totalPoints').textContent = formatPoints(appData.totalPoints);
-    document.getElementById('level').textContent = level;
-    document.getElementById('rank').textContent = rank;
+    // Load data
+    loadFromLocalStorage();
     
-    const progressBar = document.getElementById('progressBar');
-    if (progressBar) progressBar.style.width = `${progress}%`;
-    
-    const progressText = document.getElementById('progressText');
-    if (progressText) progressText.textContent = `${pointsInLevel}/1000`;
-    
-    for (let i = 1; i <= 4; i++) {
-        const count = appData.tasks.filter(t => t.categoryId === i).length;
-        const countEl = document.getElementById(`count-${i}`);
-        if (countEl) countEl.textContent = count;
-    }
-    
-    updatePremiumBadge();
+    // Initialize UI
     renderTasks();
+    updateUserDisplay();
+    setupEventListeners();
+    checkMidnightPenalty();
+    
+    console.log('✅ NEXUS Ready! Points:', userPoints, 'Tasks:', tasks.length);
+});
+
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+
+function setupEventListeners() {
+    // Add task button
+    document.getElementById('add-task-btn')?.addEventListener('click', showAddTaskModal);
+    
+    // Task input - Enter key
+    document.getElementById('new-task-name')?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTask();
+    });
+    
+    // Add task button in modal
+    document.getElementById('confirm-add-task')?.addEventListener('click', addTask);
+    
+    // Category buttons
+    document.querySelectorAll('[data-category]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('[data-category]').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            filterTasksByCategory(e.target.dataset.category);
+        });
+    });
+    
+    // Watch ad button
+    document.getElementById('watch-ad-btn')?.addEventListener('click', watchAd);
+    
+    // Premium features
+    document.getElementById('claim-premium')?.addEventListener('click', claimPremiumReward);
 }
 
-function updatePremiumBadge() {
-    const badge = document.getElementById('premiumBadge');
-    if (!badge) return;
-    if (appData.premiumStatus === 'paid') {
-        badge.textContent = '👑 PREMIUM';
-        badge.className = 'premium-badge paid';
-    } else if (appData.premiumStatus === 'ad-premium') {
-        const daysLeft = Math.ceil((appData.premiumExpiry - Date.now()) / (24 * 60 * 60 * 1000));
-        badge.textContent = `⭐ PREMIUM (${daysLeft}d)`;
-        badge.className = 'premium-badge ad-premium';
+// ============================================================================
+// TASK MANAGEMENT
+// ============================================================================
+
+function showAddTaskModal() {
+    // Show modal UI
+    const modal = document.getElementById('add-task-modal');
+    if (modal) modal.style.display = 'block';
+    document.getElementById('new-task-name').focus();
+}
+
+function addTask() {
+    const taskName = document.getElementById('new-task-name')?.value.trim();
+    const priority = document.getElementById('priority-select')?.value || 'medium';
+    const category = document.getElementById('category-select')?.value || 'learning';
+    
+    if (!taskName) {
+        showNotification('Task name cannot be empty!', 'error');
+        return;
+    }
+    
+    const task = {
+        id: Date.now(),
+        name: taskName,
+        priority: priority,
+        category: category,
+        completed: false,
+        createdAt: new Date().toISOString(),
+        completedAt: null,
+        points: getPointsForPriority(priority)
+    };
+    
+    tasks.push(task);
+    
+    // Clear input
+    document.getElementById('new-task-name').value = '';
+    
+    // Close modal
+    const modal = document.getElementById('add-task-modal');
+    if (modal) modal.style.display = 'none';
+    
+    // Update UI
+    renderTasks();
+    saveToLocalStorage();
+    
+    showNotification(`✅ Task added: ${taskName}`, 'success');
+}
+
+function getPointsForPriority(priority) {
+    const pointMap = {
+        'high': 100,
+        'medium': 50,
+        'low': 30
+    };
+    return pointMap[priority] || 50;
+}
+
+function toggleTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    // Get old stats before update
+    const oldStats = calculateRankAndLevel(userPoints);
+    
+    // Toggle completion
+    task.completed = !task.completed;
+    task.completedAt = task.completed ? new Date().toISOString() : null;
+    
+    // Update points
+    if (task.completed) {
+        userPoints += task.points;
     } else {
-        badge.textContent = '🆓 FREE';
-        badge.className = 'premium-badge free';
+        userPoints -= task.points;
+        userPoints = Math.max(0, userPoints);
+    }
+    
+    // Get new stats after update
+    const newStats = calculateRankAndLevel(userPoints);
+    
+    // Check for rank up
+    if (newStats.rank !== oldStats.rank) {
+        triggerRankUpAnimation(oldStats.rank, newStats.rank);
+    }
+    
+    // Update display
+    renderTasks();
+    updateUserDisplay();
+    saveToLocalStorage();
+    
+    console.log(`Task ${task.completed ? 'completed' : 'uncompleted'}: ${task.name}`);
+}
+
+function deleteTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    // If completed, remove points
+    if (task.completed) {
+        userPoints -= task.points;
+        userPoints = Math.max(0, userPoints);
+    }
+    
+    // Remove from array
+    tasks = tasks.filter(t => t.id !== taskId);
+    
+    // Update display
+    renderTasks();
+    updateUserDisplay();
+    saveToLocalStorage();
+    
+    showNotification('Task deleted', 'info');
+}
+
+function editTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const newName = prompt('Edit task name:', task.name);
+    if (newName && newName.trim()) {
+        task.name = newName.trim();
+        renderTasks();
+        saveToLocalStorage();
+        showNotification('Task updated', 'success');
     }
 }
 
 function renderTasks() {
-    const taskList = document.getElementById('taskList');
-    if (!taskList) return;
-    const categoryTasks = appData.tasks.filter(t => t.categoryId === currentCategory);
-    taskList.innerHTML = '';
-    if (categoryTasks.length === 0) {
-        taskList.innerHTML = '<div class="no-tasks">No tasks yet! Add one to get started.</div>';
-        return;
+    const currentCategory = document.querySelector('[data-category].active')?.dataset.category || 'all';
+    let filteredTasks = tasks;
+    
+    if (currentCategory !== 'all') {
+        filteredTasks = tasks.filter(t => t.category === currentCategory);
     }
-    categoryTasks.forEach(task => {
-        const taskDiv = document.createElement('div');
-        taskDiv.className = `task-item ${task.isDone ? 'completed' : ''} priority-${task.priority}`;
-        const priorityEmoji = task.priority === 'high' ? '🔴' : task.priority === 'medium' ? '🟡' : '🟢';
-        const points = PRIORITY_POINTS[task.priority];
-        taskDiv.innerHTML = `
-            <input type="checkbox" class="task-checkbox" ${task.isDone ? 'checked' : ''} data-id="${task.id}">
+    
+    const taskList = document.getElementById('task-list');
+    if (!taskList) return;
+    
+    // Sort by completion status and priority
+    filteredTasks.sort((a, b) => {
+        if (a.completed === b.completed) {
+            const priorityOrder = { 'high': 1, 'medium': 2, 'low': 3 };
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
+        }
+        return a.completed ? 1 : -1;
+    });
+    
+    taskList.innerHTML = filteredTasks.map(task => `
+        <div class="task-item ${task.completed ? 'completed' : ''} priority-${task.priority}">
+            <input 
+                type="checkbox" 
+                ${task.completed ? 'checked' : ''} 
+                onchange="toggleTask(${task.id})"
+                class="task-checkbox"
+            />
             <div class="task-content">
-                <div class="task-name">${task.name} ${priorityEmoji}</div>
-                <div class="task-points">+${points} pts</div>
+                <span class="task-name">${escapeHtml(task.name)}</span>
+                <span class="task-points">+${task.points} pts</span>
             </div>
             <div class="task-actions">
-                <button class="edit-btn" data-id="${task.id}">✏️</button>
-                <button class="delete-btn" data-id="${task.id}">🗑️</button>
+                <button onclick="editTask(${task.id})" class="btn-small">✏️ Edit</button>
+                <button onclick="deleteTask(${task.id})" class="btn-small">🗑️ Delete</button>
             </div>
-        `;
-        taskList.appendChild(taskDiv);
-    });
-}
-
-function addTask() {
-    const nameInput = document.getElementById('taskInput');
-    const prioritySelect = document.getElementById('prioritySelect');
-    if (!nameInput || !prioritySelect) return;
-    const name = nameInput.value.trim();
-    const priority = prioritySelect.value;
-    if (!name) { alert('⚠️ Please enter a task name!'); return; }
-    const task = {
-        id: Date.now(),
-        name, priority,
-        points: PRIORITY_POINTS[priority],
-        isDone: false,
-        categoryId: currentCategory,
-        doneTimestamp: null
-    };
-    appData.tasks.push(task);
-    saveData();
-    updateDisplay();
-    nameInput.value = '';
-    prioritySelect.value = 'medium';
-}
-
-function toggleTask(id) {
-    const task = appData.tasks.find(t => t.id === id);
-    if (!task) return;
-    if (!task.isDone) {
-        task.isDone = true;
-        task.doneTimestamp = Date.now();
-        appData.totalPoints += task.points;
-        const pointsEl = document.getElementById('totalPoints');
-        if (pointsEl) {
-            pointsEl.classList.add('points-gained');
-            setTimeout(() => pointsEl.classList.remove('points-gained'), 500);
-        }
-    } else {
-        task.isDone = false;
-        task.doneTimestamp = null;
-        appData.totalPoints -= task.points;
-    }
-    saveData();
-    updateDisplay();
-}
-
-function deleteTask(id) {
-    const task = appData.tasks.find(t => t.id === id);
-    if (!task) return;
-    if (task.isDone) appData.totalPoints -= task.points;
-    appData.tasks = appData.tasks.filter(t => t.id !== id);
-    saveData();
-    updateDisplay();
-}
-
-function editTask(id) {
-    const task = appData.tasks.find(t => t.id === id);
-    if (!task) return;
-    const newName = prompt('Edit task name:', task.name);
-    if (newName && newName.trim()) {
-        task.name = newName.trim();
-        saveData();
-        updateDisplay();
+        </div>
+    `).join('');
+    
+    // Show empty state
+    if (filteredTasks.length === 0) {
+        taskList.innerHTML = '<p class="empty-state">No tasks. Create one to get started! 🚀</p>';
     }
 }
 
-function switchCategory(categoryId) {
-    currentCategory = categoryId;
-    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelector(`[data-category="${categoryId}"]`)?.classList.add('active');
+function filterTasksByCategory(category) {
     renderTasks();
 }
 
-function watchRewardAd() {
-    if (appData.premiumStatus === 'ad-premium' || appData.premiumStatus === 'paid') {
-        const daysLeft = Math.ceil((appData.premiumExpiry - Date.now()) / (24 * 60 * 60 * 1000));
-        alert(`⚠️ Premium Already Active!
+// ============================================================================
+// RANK & POINTS SYSTEM (Dynamic +150 per rank)
+// ============================================================================
 
-You have ${daysLeft} day(s) remaining.`);
+function updateUserDisplay() {
+    // Calculate current stats
+    const stats = calculateRankAndLevel(userPoints);
+    
+    // Update rank display
+    const rankElement = document.getElementById('rank-display');
+    if (rankElement) {
+        rankElement.textContent = `${stats.rank} - Level ${stats.level}`;
+        rankElement.style.color = stats.color;
+    }
+    
+    // Update total level
+    const totalLevelElement = document.getElementById('total-level');
+    if (totalLevelElement) {
+        totalLevelElement.textContent = `Total Level: ${stats.totalLevel}/180`;
+    }
+    
+    // Update points display
+    const pointsElement = document.getElementById('points-display');
+    if (pointsElement) {
+        pointsElement.textContent = `${formatNumber(stats.totalPoints)} points`;
+    }
+    
+    // Update progress bars
+    const levelProgressBar = document.getElementById('level-progress-bar');
+    if (levelProgressBar) {
+        levelProgressBar.style.width = stats.progressInLevelPercent + '%';
+    }
+    
+    const rankProgressBar = document.getElementById('rank-progress-bar');
+    if (rankProgressBar) {
+        rankProgressBar.style.width = stats.progressInRankPercent + '%';
+    }
+    
+    // Update next level cost
+    const nextLevelElement = document.getElementById('next-level-cost');
+    if (nextLevelElement) {
+        nextLevelElement.textContent = `Next Level: ${formatNumber(stats.pointsNeededForNextLevel)} pts (${formatNumber(stats.pointsPerLevelRequired)} required)`;
+    }
+    
+    // Update rank badge
+    const rankBadge = document.getElementById('rank-badge');
+    if (rankBadge) {
+        rankBadge.textContent = stats.rank;
+        rankBadge.style.backgroundColor = stats.color;
+    }
+    
+    // Update ad counter
+    const adCounterElement = document.getElementById('ad-counter');
+    if (adCounterElement) {
+        adCounterElement.textContent = `${userPremiumAds}/10`;
+    }
+    
+    // Update premium status
+    const premiumStatusElement = document.getElementById('premium-status');
+    if (premiumStatusElement) {
+        premiumStatusElement.textContent = isPremium ? '👑 PREMIUM' : 'Free';
+        premiumStatusElement.style.color = isPremium ? '#FFD700' : '#999';
+    }
+    
+    console.log('Display Updated:', stats);
+}
+
+function triggerRankUpAnimation(oldRank, newRank) {
+    // Create notification
+    const notification = document.createElement('div');
+    notification.className = 'rank-up-notification';
+    notification.innerHTML = `
+        <div class="rank-up-content">
+            <h2>🎉 RANK UP! 🎉</h2>
+            <p><span style="color: ${RANK_COLORS[oldRank]}">${oldRank}</span> → <span style="color: ${RANK_COLORS[newRank]}">${newRank}</span></p>
+            <p>Congratulations! You've reached ${newRank}!</p>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Animation
+    notification.style.animation = 'slideInUp 0.5s ease-out';
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutDown 0.5s ease-in';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+    
+    // Sound effect (optional)
+    playSound('levelup');
+}
+
+// ============================================================================
+// PREMIUM SYSTEM
+// ============================================================================
+
+function watchAd() {
+    if (isPremium) {
+        showNotification('You already have premium! 👑', 'info');
         return;
     }
-    appData.adsWatched++;
-    if (appData.adsWatched >= REWARD_AD_CONFIG.adsRequired) {
-        appData.premiumExpiry = Date.now() + (REWARD_AD_CONFIG.premiumDays * 24 * 60 * 60 * 1000);
-        appData.premiumStatus = 'ad-premium';
-        appData.adsWatched = 0;
-        alert(`🎉 PREMIUM UNLOCKED!
-
-${REWARD_AD_CONFIG.premiumDays} days of premium!`);
+    
+    userPremiumAds++;
+    
+    if (userPremiumAds >= 10) {
+        isPremium = true;
+        userPremiumAds = 0;
+        showNotification('🎉 You unlocked Premium! +50% to rewards!', 'success');
     } else {
-        alert(`🎁 Ad Watched!
-
-${appData.adsWatched}/${REWARD_AD_CONFIG.adsRequired} ads`);
+        showNotification(`Ad watched (${userPremiumAds}/10)`, 'info');
     }
-    saveData();
-    updateDisplay();
+    
+    updateUserDisplay();
+    saveToLocalStorage();
 }
 
-function saveData() {
-    localStorage.setItem('nexus_appData_' + USER_ID, JSON.stringify(appData));
-}
-
-function loadData() {
-    const saved = localStorage.getItem('nexus_appData_' + USER_ID);
-    if (saved) {
-        try { appData = JSON.parse(saved); } catch (e) { console.log('Load error'); }
+function claimPremiumReward() {
+    if (!isPremium) {
+        showNotification('Watch 10 ads to unlock premium rewards!', 'warning');
+        return;
     }
-    checkMidnightReset();
-    updateDisplay();
-}
-
-function initApp() {
-    console.log('🎮 NEXUS Starting...');
-    const addBtn = document.getElementById('addTaskBtn');
-    if (addBtn) addBtn.addEventListener('click', addTask);
-    const input = document.getElementById('taskInput');
-    if (input) input.addEventListener('keypress', e => { if (e.key === 'Enter') addTask(); });
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchCategory(parseInt(btn.dataset.category)));
-    });
-    const list = document.getElementById('taskList');
-    if (list) {
-        list.addEventListener('click', e => {
-            const id = parseInt(e.target.dataset.id);
-            if (e.target.classList.contains('task-checkbox')) toggleTask(id);
-            else if (e.target.classList.contains('delete-btn') && confirm('Delete?')) deleteTask(id);
-            else if (e.target.classList.contains('edit-btn')) editTask(id);
-        });
+    
+    const baseReward = 500;
+    const bonus = Math.floor(baseReward * 1.5); // 50% bonus for premium
+    
+    const oldStats = calculateRankAndLevel(userPoints);
+    
+    // Add bonus points
+    userPoints += bonus;
+    
+    const newStats = calculateRankAndLevel(userPoints);
+    
+    // Check for rank up
+    if (newStats.rank !== oldStats.rank) {
+        triggerRankUpAnimation(oldStats.rank, newStats.rank);
     }
-    const adBtn = document.getElementById('watchAdBtn');
-    if (adBtn) adBtn.addEventListener('click', watchRewardAd);
-    loadData();
-    setInterval(checkMidnightReset, 60000);
+    
+    showNotification(`💎 Premium Reward: +${formatNumber(bonus)} points!`, 'success');
+    
+    updateUserDisplay();
+    saveToLocalStorage();
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initApp);
-} else {
-    initApp();
+// ============================================================================
+// MIDNIGHT PENALTY SYSTEM
+// ============================================================================
+
+function checkMidnightPenalty() {
+    const today = new Date().toDateString();
+    
+    if (lastLoginDate !== today) {
+        // It's a new day - apply penalty
+        applyMidnightPenalty();
+        lastLoginDate = today;
+    }
+}
+
+function applyMidnightPenalty() {
+    const uncompletedCount = tasks.filter(t => !t.completed).length;
+    const penalty = uncompletedCount * 100;
+    
+    if (uncompletedCount === 0) {
+        showNotification('✅ Perfect day! No penalties!', 'success');
+        streakDays++;
+        return;
+    }
+    
+    const oldStats = calculateRankAndLevel(userPoints);
+    
+    // Apply penalty
+    userPoints -= penalty;
+    userPoints = Math.max(0, userPoints);
+    
+    // Reset tasks
+    tasks.forEach(t => t.completed = false);
+    
+    // Reset streak
+    streakDays = 0;
+    
+    const newStats = calculateRankAndLevel(userPoints);
+    
+    // Show penalty notification
+    showNotification(
+        `⚠️ Midnight Penalty: -${formatNumber(penalty)} points
+${uncompletedCount} uncompleted tasks`,
+        'warning'
+    );
+    
+    updateUserDisplay();
+    renderTasks();
+    saveToLocalStorage();
+}
+
+// ============================================================================
+// STORAGE (LocalStorage)
+// ============================================================================
+
+function saveToLocalStorage() {
+    const data = {
+        tasks: tasks,
+        userPoints: userPoints,
+        userPremiumAds: userPremiumAds,
+        isPremium: isPremium,
+        streakDays: streakDays,
+        lastLoginDate: lastLoginDate,
+        lastUpdated: new Date().toISOString(),
+        systemVersion: 2 // Dynamic points system
+    };
+    
+    try {
+        localStorage.setItem('nexusAppData', JSON.stringify(data));
+        console.log('✅ Data saved to localStorage');
+    } catch (error) {
+        console.error('❌ Error saving to localStorage:', error);
+    }
+}
+
+function loadFromLocalStorage() {
+    try {
+        const saved = localStorage.getItem('nexusAppData');
+        
+        if (!saved) {
+            console.log('No saved data found. Starting fresh.');
+            return;
         }
+        
+        const data = JSON.parse(saved);
+        
+        // Load data
+        tasks = data.tasks || [];
+        userPoints = data.userPoints || 0;
+        userPremiumAds = data.userPremiumAds || 0;
+        isPremium = data.isPremium || false;
+        streakDays = data.streakDays || 0;
+        lastLoginDate = data.lastLoginDate || new Date().toDateString();
+        
+        console.log('✅ Data loaded from localStorage');
+        console.log('Loaded:', { tasks: tasks.length, points: userPoints, premium: isPremium });
+    } catch (error) {
+        console.error('❌ Error loading from localStorage:', error);
+    }
+}
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196F3'};
+        color: white;
+        border-radius: 5px;
+        z-index: 10000;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function playSound(soundName) {
+    // Optional: Add sound effects
+    try {
+        const sounds = {
+            'levelup': new Audio('data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAAB9AAACABAAZGF0YQIAAAAAAAA=')
+        };
+        if (sounds[soundName]) {
+            sounds[soundName].play().catch(() => {});
+        }
+    } catch (e) {
+        // Sound failed, ignore
+    }
+}
+
+// ============================================================================
+// DEBUG FUNCTIONS (for testing)
+// ============================================================================
+
+function debugTestRanks() {
+    console.log('=== RANK SYSTEM TEST ===');
+    const testPoints = [0, 10000, 21500, 50000, 100000, 200000, 300000, 409500];
+    testPoints.forEach(points => {
+        const stats = calculateRankAndLevel(points);
+        console.log(`Points: ${formatNumber(points)} → Rank: ${stats.rank}, Level: ${stats.level}, Total: ${stats.totalLevel}`);
+    });
+}
+
+function debugAddPoints(amount) {
+    userPoints += amount;
+    updateUserDisplay();
+    saveToLocalStorage();
+    console.log(`Added ${amount} points. Total: ${userPoints}`);
+}
+
+function debugResetData() {
+    if (confirm('Are you sure? This will delete all data!')) {
+        tasks = [];
+        userPoints = 0;
+        userPremiumAds = 0;
+        isPremium = false;
+        streakDays = 0;
+        localStorage.removeItem('nexusAppData');
+        location.reload();
+    }
+}
+
+// ============================================================================
+// EXPORT (for testing)
+// ============================================================================
+
+window.nexusDebug = {
+    testRanks: debugTestRanks,
+    addPoints: debugAddPoints,
+    resetData: debugResetData
+};
+
+console.log('🎮 NEXUS Debug Commands Available:');
+console.log('- nexusDebug.testRanks() - Test rank system');
+console.log('- nexusDebug.addPoints(100) - Add points');
+console.log('- nexusDebug.resetData() - Reset all data');
