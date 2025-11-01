@@ -81,6 +81,36 @@
             <button id="install-btn"  
                 style="display:none;position:fixed;bottom:16px;right:16px;z-index:2000;">Install App
             </button>
+
+            <!-- Rank-Up Modal -->
+<div id="rankUpModal" class="modal" style="display:none;">
+  <div class="modal-content rank-up-container">
+    <span class="close-modal" onclick="closeRankUpModal()">&times;</span>
+    <div class="rank-up-content">
+      <h2 id="rankUpTitle">⚡ RANK UP! ⚡</h2>
+      <p id="rankUpMessage" class="rank-up-message"></p>
+      <div id="rankUpChallenge" class="rank-up-challenge"></div>
+      <button id="acceptChallengeBtn" onclick="acceptRankUpChallenge()" class="btn-primary">Accept Challenge</button>
+    </div>
+  </div>
+</div>
+
+           <!-- Achievements & Streaks Panel -->
+<div id="achievementsPanel" class="achievements-panel" style="display:none;">
+  <div class="achievements-header">
+    <h3>🏆 Achievements & Streaks</h3>
+    <span onclick="closeAchievementsPanel()" style="cursor:pointer; font-size:1.5rem;">✕</span>
+  </div>
+  <div id="streakContainer" class="streak-container"></div>
+  <div id="achievementsContainer" class="achievements-container"></div>
+</div>
+
+<!-- Achievements Button -->
+<button id="achievementsBtn" onclick="toggleAchievementsPanel()" style="position: fixed; bottom: 70px; right: 20px; z-index: 999; padding: 12px 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 1rem; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">🏆 Achievements</button>
+
+           <!-- Notification Container -->
+<div id="notificationContainer" class="notification-container"></div>
+    
     <script src="script.js"></script>
 </body>
                                                                                      </html>
