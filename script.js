@@ -316,6 +316,305 @@ function loadData() {
 
 window.onload = loadData;
 
+// ==================== RANK-UP MODAL CHALLENGES ====================
+const RANK_UP_THRESHOLDS = {
+  'E': 100,
+  'EE': 300,
+  'EEE': 600,
+  'D': 1000,
+  'DD': 1500,
+  'DDD': 2200,
+  'C': 3000,
+  'CC': 4000,
+  'CCC': 5200,
+  'B': 6500,
+  'BB': 8000,
+  'BBB': 9500,
+  'A': 11200,
+  'AA': 13000,
+  'AAA': 15000,
+  'S': 17500,
+  'SS': 20000,
+  'SSS': 25000
+};
+
+const RANK_UP_CHALLENGES = {
+  mini: [
+    "Complete 3 tasks in the next hour",
+    "Maintain a 5-task streak today",
+    "Score 300+ points in one session"
+  ],
+  streak: [
+    "Complete tasks for 7 consecutive days",
+    "Achieve a 10-task daily streak",
+    "Maintain 5 activity points for 3 days"
+  ],
+  bonus: [
+    "Complete all tasks for a bonus 50 points",
+    "Reach 1000 cumulative points",
+    "Unlock the next rank tier"
+  ]
+};
+
+function checkForRankUp() {
+  const currentRankIndex = RANKS.indexOf(appData.currentRank || 'E');
+  const nextRank = RANKS[currentRankIndex + 1];
+  
+  if (!nextRank) return; // Already at max rank
+  
+  const nextThreshold = RANK_UP_THRESHOLDS[nextRank];
+  
+  if (appData.totalPoints >= nextThreshold) {
+    appData.currentRank = nextRank;
+    saveData();
+    showRankUpModal(nextRank);
+  }
+}
+
+function showRankUpModal(newRank) {
+  const modal = document.getElementById('rankUpModal');
+  const title = document.getElementById('rankUpTitle');
+  const message = document.getElementById('rankUpMessage');
+  const challenge = document.getElementById('rankUpChallenge');
+  
+  title.textContent = `⚡ RANK UP TO ${newRank}! ⚡`;
+  message.textContent = `You have ascended! Welcome to Rank ${newRank}!`;
+  
+  // Random challenge
+  const challengeTypes = ['mini', 'streak', 'bonus'];
+  const randomType = challengeTypes[Math.floor(Math.random() * challengeTypes.length)];
+  const randomChallenge = RANK_UP_CHALLENGES[randomType][
+    Math.floor(Math.random() * RANK_UP_CHALLENGES[randomType].length)
+  ];
+  
+  challenge.innerHTML = `<strong>🎯 Challenge:</strong><br>${randomChallenge}`;
+  
+  modal.style.display = 'flex';
+}
+
+function closeRankUpModal() {
+  document.getElementById('rankUpModal').style.display = 'none';
+}
+
+function acceptRankUpChallenge() {
+  closeRankUpModal();
+  showNotification('Challenge Accepted! Your destiny awaits...', 'success');
+}
+
+// Call rank check after task completion
+function completeTask(index) {
+  // ... existing complete task logic ...
+  appData.totalPoints += points;
+  checkForRankUp(); // Add this line
+  // ... rest of logic ...
+}
+
+// ==================== ACHIEVEMENTS & STREAK TRACKING ====================
+const ACHIEVEMENTS = [
+  { id: 'first_task', icon: '✅', name: 'First Step', desc: 'Complete 1 task' },
+  { id: 'task_master', icon: '⭐', name: 'Task Master', desc: 'Complete 50 tasks' },
+  { id: 'streak_7', icon: '🔥', name: 'On Fire', desc: '7-day streak' },
+  { id: 'streak_30', icon: '🚀', name: 'Unstoppable', desc: '30-day streak' },
+  { id: 'points_1000', icon: '💎', name: 'Point Collector', desc: 'Earn 1000 points' },
+  { id: 'all_categories', icon: '🎯', name: 'Balanced', desc: 'Complete all categories' },
+  { id: 'premium_user', icon: '👑', name: 'Elite', desc: 'Get premium' },
+  { id: 'rank_s', icon: '👹', name: 'S-Rank God', desc: 'Reach S rank' }
+];
+
+if (!appData.achievements) appData.achievements = {};
+if (!appData.streaks) appData.streaks = {
+  current: 0,
+  longest: 0,
+  lastCompletedDate: null
+};
+
+function updateStreaks() {
+  const today = new Date().toDateString();
+  const lastDate = appData.streaks.lastCompletedDate;
+  
+  if (lastDate !== today) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (lastDate === yesterday.toDateString()) {
+      appData.streaks.current++;
+    } else if (lastDate !== today) {
+      appData.streaks.current = 1;
+    }
+    
+    appData.streaks.lastCompletedDate = today;
+    appData.streaks.longest = Math.max(appData.streaks.longest, appData.streaks.current);
+  }
+}
+
+function checkAchievements() {
+  // First task
+  if (appData.tasks.length >= 1) unlockAchievement('first_task');
+  
+  // Task master
+  const completedTasks = appData.tasks.filter(t => t.completed).length;
+  if (completedTasks >= 50) unlockAchievement('task_master');
+  
+  // Streaks
+  if (appData.streaks.current >= 7) unlockAchievement('streak_7');
+  if (appData.streaks.current >= 30) unlockAchievement('streak_30');
+  
+  // Points
+  if (appData.totalPoints >= 1000) unlockAchievement('points_1000');
+  
+  // Premium
+  if (appData.premiumStatus !== 'free') unlockAchievement('premium_user');
+  
+  // Rank S
+  if (appData.currentRank === 'S' || appData.currentRank === 'SS' || appData.currentRank === 'SSS') {
+    unlockAchievement('rank_s');
+  }
+}
+
+function unlockAchievement(achId) {
+  if (!appData.achievements[achId]) {
+    appData.achievements[achId] = { unlocked: true, unlockedDate: new Date().toISOString() };
+    const ach = ACHIEVEMENTS.find(a => a.id === achId);
+    if (ach) showNotification(`🏆 Achievement Unlocked: ${ach.name}!`, 'success');
+    saveData();
+  }
+}
+
+function toggleAchievementsPanel() {
+  const panel = document.getElementById('achievementsPanel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  if (panel.style.display !== 'none') renderAchievements();
+}
+
+function closeAchievementsPanel() {
+  document.getElementById('achievementsPanel').style.display = 'none';
+}
+
+function renderAchievements() {
+  const streakContainer = document.getElementById('streakContainer');
+  const achievementsContainer = document.getElementById('achievementsContainer');
+  
+  // Render streaks
+  streakContainer.innerHTML = `
+    <div class="streak-item">
+      <div class="streak-count">${appData.streaks.current}</div>
+      <div class="streak-label">Current Streak</div>
+    </div>
+    <div class="streak-item">
+      <div class="streak-count">${appData.streaks.longest}</div>
+      <div class="streak-label">Longest Streak</div>
+    </div>
+  `;
+  
+  // Render achievements
+  achievementsContainer.innerHTML = ACHIEVEMENTS.map(ach => {
+    const unlocked = appData.achievements[ach.id];
+    return `
+      <div class="achievement-item ${unlocked ? 'unlocked' : 'locked'}">
+        <div class="achievement-icon">${ach.icon}</div>
+        <div class="achievement-name">${ach.name}</div>
+        <div class="achievement-desc">${ach.desc}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ==================== MOTIVATIONAL NOTIFICATIONS (ISEKAI THEME) ====================
+const ISEKAI_MESSAGES = {
+  greetings: [
+    { icon: '👹', title: 'Welcome Back, Summoned One!', text: 'Your destiny awaits. Begin your trials today!' },
+    { icon: '⚡', title: 'Power Awakens!', text: 'Channel your inner strength. Complete tasks to grow stronger!' },
+    { icon: '🔮', title: 'Fate Calls...', text: 'The heavens watch your progress. Rise to greatness!' },
+    { icon: '🌙', title: 'Moonlight Guidance', text: 'In this new world, your will shapes reality. Act with purpose!' }
+  ],
+  taskCompletion: [
+    { icon: '✨', title: 'Quest Complete!', text: 'One step closer to godhood. Keep going!' },
+    { icon: '⚔️', title: 'Victory!', text: 'Your power grows with each trial. Onwards!' },
+    { icon: '💪', title: 'Strength Increased!', text: 'Every completed quest forges your legend!' },
+    { icon: '🎯', title: 'On Target!', text: 'Your will bends reality. Continue this path!' }
+  ],
+  streaks: [
+    { icon: '🔥', title: 'Burning Streak!', text: 'Your momentum is unstoppable. 3 more to reach the heavens!' },
+    { icon: '⭐', title: 'Celestial Bond', text: 'The stars align with your efforts! Keep the flame alive!' },
+    { icon: '🚀', title: 'Ascension Imminent!', text: 'Your power rivals the gods. Do not falter now!' }
+  ],
+  levelUp: [
+    { icon: '👑', title: 'Rank Ascension!', text: 'You transcend your former self. A new era begins!' },
+    { icon: '⚡', title: 'Divine Breakthrough!', text: 'The heavens recognize your power. Fear no mortal!' },
+    { icon: '🌟', title: 'Legend Rising!', text: 'Your name shall echo through dimensions. Claim your throne!' }
+  ],
+  motivational: [
+    { icon: '💎', title: 'Diamond Will', text: 'Even the mightiest face trials. Your resolve is your strength.' },
+    { icon: '🎭', title: 'Script Your Fate', text: 'In this world, destiny is written by your actions!' },
+    { icon: '🔗', title: 'Bonds Matter', text: 'Your achievements inspire worlds. Never surrender!' }
+  ]
+};
+
+function showNotification(message, type = 'info', title = 'Atherion') {
+  const container = document.getElementById('notificationContainer');
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  
+  const icons = { success: '✓', warning: '⚠', info: 'ℹ', error: '✕' };
+  
+  notification.innerHTML = `
+    <div class="notification-icon">${icons[type]}</div>
+    <div class="notification-content">
+      <div class="notification-title">${title}</div>
+      <div class="notification-message">${message}</div>
+    </div>
+    <div class="notification-close" onclick="this.parentElement.remove()">×</div>
+  `;
+  
+  container.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), 5000);
+}
+
+function showIsekaiNotification(messageType) {
+  const messages = ISEKAI_MESSAGES[messageType] || [];
+  if (messages.length === 0) return;
+  
+  const msg = messages[Math.floor(Math.random() * messages.length)];
+  const container = document.getElementById('notificationContainer');
+  const notification = document.createElement('div');
+  notification.className = 'notification info';
+  
+  notification.innerHTML = `
+    <div class="notification-icon">${msg.icon}</div>
+    <div class="notification-content">
+      <div class="notification-title">${msg.title}</div>
+      <div class="notification-message">${msg.text}</div>
+    </div>
+    <div class="notification-close" onclick="this.parentElement.remove()">×</div>
+  `;
+  
+  container.appendChild(notification);
+  
+  setTimeout(() => notification.remove(), 6000);
+}
+
+// Trigger on app load
+function triggerGreeting() {
+  showIsekaiNotification('greetings');
+}
+
+// Call on task completion
+function onTaskCompleted() {
+  showIsekaiNotification('taskCompletion');
+  updateStreaks();
+  checkAchievements();
+  checkForRankUp();
+}
+
+// Call periodically for motivation
+function triggerMotivationalNotification() {
+  const hour = new Date().getHours();
+  if ((hour === 9 || hour === 17 || hour === 21) && appData.premiumStatus !== 'free') {
+    showIsekaiNotification('motivational');
+  }
+}
+
 // --- PWA Service Worker & Install Prompt ---
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
