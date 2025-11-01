@@ -442,3 +442,270 @@ font-size: 1.5rem;
 grid-template-columns: 1fr;
 }
   }
+
+/* Rank-Up Modal */
+.modal {
+  position: fixed;
+  z-index: 3000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rank-up-container {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 3px solid #ffd700;
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+  animation: rankUpPulse 0.8s ease-in-out;
+}
+
+@keyframes rankUpPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#rankUpTitle {
+  font-size: 2.5rem;
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  margin: 0 0 15px 0;
+}
+
+.rank-up-message {
+  font-size: 1.2rem;
+  color: #fff;
+  margin: 15px 0;
+}
+
+.rank-up-challenge {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.close-modal {
+  color: #ffd700;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close-modal:hover {
+  color: #fff;
+                   }
+
+/* Achievements Panel */
+.achievements-panel {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: 100%;
+  max-width: 400px;
+  height: 80%;
+  background: linear-gradient(180deg, #1a1a2e, #16213e);
+  border-left: 3px solid #667eea;
+  z-index: 2999;
+  border-radius: 20px 20px 0 0;
+  overflow-y: auto;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.achievements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px 20px 0 0;
+  sticky top: 0;
+}
+
+.achievements-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.streak-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.streak-item {
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+}
+
+.streak-count {
+  font-size: 2rem;
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.streak-label {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.achievements-container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.achievement-item {
+  background: rgba(102, 126, 234, 0.2);
+  border: 2px solid rgba(102, 126, 234, 0.5);
+  border-radius: 10px;
+  padding: 15px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.achievement-item.unlocked {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.achievement-item.locked {
+  opacity: 0.5;
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  margin: 10px 0;
+}
+
+.achievement-name {
+  font-weight: bold;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.achievement-desc {
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 5px;
+}
+
+/* Notifications */
+.notification-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 4000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 350px;
+}
+
+.notification {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-left: 5px solid #ffd700;
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.5s ease-out;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification.success {
+  border-left-color: #4caf50;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+}
+
+.notification.warning {
+  border-left-color: #ff9800;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+}
+
+.notification.info {
+  border-left-color: #2196f3;
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+}
+
+.notification-icon {
+  font-size: 1.8rem;
+  min-width: 40px;
+  text-align: center;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+.notification-message {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.notification-close {
+  cursor: pointer;
+  font-size: 1.2rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
