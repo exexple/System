@@ -357,6 +357,22 @@ const RANK_UP_CHALLENGES = {
   ]
 };
 
+function generateRankUpChallenge(currentRankIndex) {
+    // Get next rank (if at highest, return null)
+    const nextRankIndex = currentRankIndex + 1;
+    if (nextRankIndex >= RANKS.length) return null;
+    
+    // Get challenge for next rank
+    const challenge = RANK_UP_CHALLENGES[RANKS[nextRankIndex]] || "No challenge available";
+    
+    // Return challenge object that can be used in app state
+    return {
+        rank: RANKS[nextRankIndex],
+        challenge,
+        hasActiveRankChallenge: true
+    };
+}
+
 function checkForRankUp() {
   const currentRankIndex = RANKS.indexOf(appData.currentRank || 'E');
   const nextRank = RANKS[currentRankIndex + 1];
@@ -365,11 +381,19 @@ function checkForRankUp() {
   
   const nextThreshold = RANK_UP_THRESHOLDS[nextRank];
   
-  if (appData.totalPoints >= nextThreshold) {
-    appData.currentRank = nextRank;
+  if (appData.totalPoints >= nextThreshold && !appData.hasActiveRankChallenge) {
+    generateRankUpChallenge();  // Create the challenge task
+    appData.hasActiveRankChallenge = true;
     saveData();
-    showRankUpModal(nextRank);
-  }
+}
+
+// Only rank up after completing the challenge
+function completeRankChallenge() {
+    appData.currentRank++;
+    appData.hasActiveRankChallenge = false;
+    showMaskedNotification('rankup');
+    saveData();
+}
 }
 
 function showRankUpModal(newRank) {
@@ -406,6 +430,7 @@ function acceptRankUpChallenge() {
 function completeTask(index) {
   // ... existing complete task logic ...
   appData.totalPoints += points;
+    checkAchievements();
   checkForRankUp(); // Add this line
   // ... rest of logic ...
 }
