@@ -709,3 +709,62 @@ grid-template-columns: 1fr;
 .notification-close:hover {
   opacity: 1;
 }
+
+/* Rank Up Challenge Box */
+.challenge-box {
+    background: rgba(255, 215, 0, 0.1);
+    border: 2px solid var(--golden);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.challenge-title {
+    color: var(--golden);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.challenge-content {
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Achievements Box */
+.achievements-box {
+    background: rgba(107, 207, 127, 0.1);
+    border: 2px solid var(--green);
+    border-radius: 12px;
+    padding: 15px;
+    margin: 15px 0;
+}
+
+.achievements-title {
+    color: var(--green);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.achievements-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.achievement-item {
+    background: rgba(107, 207, 127, 0.2);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #fff;
+    font-size: 0.9rem;
+    text-align: center;
+}
