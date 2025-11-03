@@ -20,6 +20,10 @@ const REWARD_AD_CONFIG = { adsRequired: 10, premiumDays: 7 };
 let appData = {
     totalPoints: 0,
     tasks: [],
+    currentRank: 0,
+    hasActiveRankChallenge: false,
+    rankUpChallenge: null, 
+    achievements: [],
     premiumStatus: 'free',
     premiumExpiry: null,
     adsWatched: 0,
@@ -152,6 +156,8 @@ function updateDisplay() {
 
     updatePremiumBadge();
     renderTasks();
+    renderRankUpChallenge();
+    renderAchievements();
 }
 
 function updatePremiumBadge() {
@@ -357,7 +363,17 @@ const RANK_UP_CHALLENGES = {
   ]
 };
 
-function generateRankUpChallenge(currentRankIndex) {
+function generateRankUpChallenge() {
+    const challenges = RANK_UP_CHALLENGES.mini;
+    const randomIndex = Math.floor(Math.random() * challenges.length);
+    const selectedChallenge = challenges[randomIndex];
+    
+    // Store in appData so it persists
+    appData.rankUpChallenge = selectedChallenge;
+    appData.hasActiveRankChallenge = true;
+    
+    return selectedChallenge;
+}
     // Get next rank (if at highest, return null)
     const nextRankIndex = currentRankIndex + 1;
     if (nextRankIndex >= RANKS.length) return null;
@@ -374,17 +390,15 @@ function generateRankUpChallenge(currentRankIndex) {
 }
 
 function checkForRankUp() {
-  const currentRankIndex = RANKS.indexOf(appData.currentRank || 'E');
-  const nextRank = RANKS[currentRankIndex + 1];
-  
-  if (!nextRank) return; // Already at max rank
-  
-  const nextThreshold = RANK_UP_THRESHOLDS[nextRank];
-  
-  if (appData.totalPoints >= nextThreshold && !appData.hasActiveRankChallenge) {
-    generateRankUpChallenge();  // Create the challenge task
-    appData.hasActiveRankChallenge = true;
-    saveData();
+    const currentRankIndex = RANKS.indexOf(appData.currentRank);
+    if (currentRankIndex === -1) return; // Already at max rank
+    
+    const nextThreshold = RANK_UP_THRESHOLDS[RANKS[currentRankIndex + 1]];
+    
+    if (appData.totalPoints >= nextThreshold && !appData.hasActiveRankChallenge) {
+        generateRankUpChallenge();  // Generate the challenge
+        saveData();  // Save it
+    }
 }
 
 // Only rank up after completing the challenge
@@ -433,6 +447,52 @@ function completeTask(index) {
     checkAchievements();
   checkForRankUp(); // Add this line
   // ... rest of logic ...
+}
+
+function addAchievement(achievementName) {
+    if (!appData.achievements) {
+        appData.achievements = [];
+    }
+    
+    // Don't add duplicates
+    if (!appData.achievements.includes(achievementName)) {
+        appData.achievements.push(achievementName);
+        saveData();
+        updateDisplay();  // This will refresh and show the achievement
+    }
+}
+
+// DISPLAY RANK UP CHALLENGE
+function renderRankUpChallenge() {
+    const challengeBox = document.getElementById('rankUpChallengeBox');
+    const challengeText = document.getElementById('rankUpChallengeText');
+    
+    if (appData.hasActiveRankChallenge && appData.rankUpChallenge) {
+        challengeBox.style.display = 'block';
+        challengeText.textContent = appData.rankUpChallenge;
+    } else {
+        challengeBox.style.display = 'none';
+    }
+}
+
+// DISPLAY ACHIEVEMENTS
+function renderAchievements() {
+    const achievementsList = document.getElementById('achievementsList');
+    
+    if (appData.achievements && appData.achievements.length > 0) {
+        // Clear previous list
+        achievementsList.innerHTML = '';
+        
+        // Loop through each achievement and display it
+        appData.achievements.forEach(achievement => {
+            const achievementDiv = document.createElement('div');
+            achievementDiv.className = 'achievement-item';
+            achievementDiv.textContent = achievement;
+            achievementsList.appendChild(achievementDiv);
+        });
+    } else {
+        achievementsList.innerHTML = '<p style="color: gray;">No achievements yet</p>';
+    }
 }
 
 // ==================== ACHIEVEMENTS & STREAK TRACKING ====================
