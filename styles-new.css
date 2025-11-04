@@ -1,0 +1,704 @@
+/* ATHERION ISEKAI SYSTEM - PHASE A STYLES */
+
+:root {
+  --bg-black: #000000;
+  --neon-purple: #8B5CF6;
+  --electric-blue: #00D9FF;
+  --golden: #FFD700;
+  --red: #FF4444;
+  --yellow: #FFD93D;
+  --green: #6BCF7F;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Orbitron', sans-serif;
+  background: var(--bg-black);
+  color: #ffffff;
+  min-height: 100vh;
+  padding: 20px;
+  padding-bottom: 100px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.stats-header {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.stat-item {
+  background: rgba(139, 92, 246, 0.05);
+  border: 2px solid rgba(139, 92, 246, 0.2);
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.stat-item:hover {
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 8px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--electric-blue);
+}
+
+.stat-value.glow-text {
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.8), 0 0 20px rgba(0, 217, 255, 0.5);
+}
+
+.stat-value.rank {
+  color: var(--golden);
+  font-size: 32px;
+}
+
+.premium-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 4px 12px;
+  font-size: 10px;
+  border-radius: 20px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.premium-badge.premium {
+  background: linear-gradient(135deg, #FFD700, #FF8C00);
+  color: #000;
+}
+
+.premium-badge.free {
+  background: rgba(100, 200, 255, 0.3);
+  border: 1px solid rgba(0, 217, 255, 0.5);
+  color: var(--electric-blue);
+}
+
+.progress-container {
+  position: relative;
+  height: 40px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  margin-bottom: 25px;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 217, 255, 0.2);
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-purple), var(--electric-blue));
+  width: 0%;
+  transition: width 0.4s ease;
+  box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-weight: bold;
+  z-index: 10;
+  font-size: 14px;
+}
+
+.category-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.category-btn {
+  background: rgba(139, 92, 246, 0.08);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  color: #fff;
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--neon-purple);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+}
+
+.category-btn.active {
+  background: rgba(0, 217, 255, 0.15);
+  border-color: var(--electric-blue);
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+}
+
+.category-name {
+  font-size: 14px;
+}
+
+.task-count {
+  background: rgba(139, 92, 246, 0.4);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  min-height: 50px;
+}
+
+.task-item {
+  background: rgba(139, 92, 246, 0.06);
+  border: 2px solid rgba(139, 92, 246, 0.25);
+  border-radius: 8px;
+  padding: 12px 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.task-item:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: var(--neon-purple);
+}
+
+.task-item.completed {
+  opacity: 0.6;
+  border-color: var(--green);
+}
+
+.task-item.completed .task-name {
+  text-decoration: line-through;
+  color: #888;
+}
+
+.task-info {
+  flex: 1;
+}
+
+.task-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #fff;
+}
+
+.task-points {
+  font-size: 12px;
+  color: var(--golden);
+}
+
+.task-priority {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.priority-high {
+  background: rgba(255, 68, 68, 0.3);
+  color: var(--red);
+}
+
+.priority-medium {
+  background: rgba(255, 217, 61, 0.3);
+  color: var(--yellow);
+}
+
+.priority-low {
+  background: rgba(107, 207, 127, 0.3);
+  color: var(--green);
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: none;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: var(--electric-blue);
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: var(--neon-purple);
+}
+
+.add-task-section {
+  background: rgba(139, 92, 246, 0.08);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.task-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.task-input:focus {
+  outline: none;
+  border-color: var(--electric-blue);
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+}
+
+.priority-select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, var(--neon-purple), var(--electric-blue));
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.add-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.reward-ad-section {
+  background: rgba(139, 92, 246, 0.08);
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.watch-ad-btn {
+  background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+  border: none;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  width: 100%;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.watch-ad-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-icon {
+  font-size: 24px;
+}
+
+.btn-text {
+  font-size: 14px;
+}
+
+.btn-subtext {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.ad-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: rgba(139, 92, 246, 0.1);
+  border-top: 2px solid rgba(139, 92, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.ad-placeholder {
+  color: #666;
+  font-size: 12px;
+}
+
+.install-app {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  z-index: 50;
+}
+
+.install-btn {
+  background: linear-gradient(135deg, var(--golden), #FF8C00);
+  border: none;
+  color: #000;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.install-btn:hover {
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   PHASE B ADDITIONS BELOW (NO THEME CHANGES)
+   ============================================ */
+
+/* GREETING NOTIFICATION - Floating Box Style */
+.greeting-notification {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.95), rgba(139, 92, 246, 0.85));
+  border: 2px solid rgba(0, 217, 255, 0.6);
+  border-radius: 12px;
+  padding: 15px 20px;
+  max-width: 90%;
+  z-index: 1000;
+  box-shadow: 0 0 30px rgba(0, 217, 255, 0.5);
+  animation: slideDown 0.5s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.greeting-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  flex: 1;
+}
+
+.greeting-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.greeting-close-btn:hover {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* RANK UP CHALLENGE DISPLAY - Visible Bar */
+.rank-challenge-display {
+  background: rgba(255, 107, 107, 0.1);
+  border: 2px solid rgba(255, 107, 107, 0.4);
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.6);
+  }
+}
+
+.challenge-header {
+  font-size: 12px;
+  font-weight: bold;
+  color: #FF6B6B;
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+
+.challenge-desc {
+  font-size: 13px;
+  color: #fff;
+  font-style: italic;
+}
+
+/* RANK UP MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: rgba(0, 0, 0, 0.95);
+  border: 3px solid var(--neon-purple);
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  animation: popIn 0.4s ease;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.rank-up-modal {
+  border: 3px solid var(--golden);
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+}
+
+.modal-title {
+  font-size: 28px;
+  color: var(--golden);
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: var(--electric-blue);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.challenge-box {
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.challenge-text {
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.accept-challenge-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--neon-purple), var(--electric-blue));
+  border: none;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.accept-challenge-btn:hover {
+  box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ACHIEVEMENTS SECTION */
+.achievements-section {
+  background: rgba(139, 92, 246, 0.08);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.achievements-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #FFD700, #FF8C00);
+  border: none;
+  color: #000;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.achievements-btn:hover {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.achievements-panel {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  border-radius: 8px;
+  margin-top: 15px;
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.panel-title {
+  color: var(--golden);
+  font-size: 16px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.achievement-item {
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.achievement-item.unlocked {
+  background: rgba(107, 207, 127, 0.15);
+  border-color: rgba(107, 207, 127, 0.4);
+}
+
+.achievement-item.locked {
+  opacity: 0.6;
+}
+
+.achievement-icon {
+  font-size: 20px;
+  min-width: 24px;
+}
+
+.achievement-info {
+  flex: 1;
+}
+
+.achievement-name {
+  font-size: 12px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.achievement-desc {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.achievement-status {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(139, 92, 246, 0.3);
+  color: var(--electric-blue);
+}
+
+.achievement-item.unlocked .achievement-status {
+  background: rgba(107, 207, 127, 0.3);
+  color: var(--green);
+}
