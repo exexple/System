@@ -311,6 +311,7 @@ function loadData() {
         }
         checkMidnightReset();
         updateDisplay();
+        triggerGreeting();
     });
 }
 
