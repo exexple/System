@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATHERION - Isekai Routine Planner</title>
+    <link rel="stylesheet" href="styles-new.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- STATS HEADER -->
+        <div class="stats-header">
+            <div class="stat-item">
+                <div class="stat-label">POINTS</div>
+                <div class="stat-value glow-text" id="totalPoints">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">LEVEL</div>
+                <div class="stat-value glow-text" id="level">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">RANK</div>
+                <div class="stat-value rank" id="rank">E</div>
+                <span class="premium-badge free" id="premiumBadge">🆓 FREE</span>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            <div class="progress-text" id="progressText">0/1000</div>
+        </div>
+
+        <!-- RANK UP CHALLENGE DISPLAY (Always visible when active) -->
+        <div id="rankUpChallengeBox" class="rank-challenge-display" style="display: none;">
+            <div class="challenge-header">🎯 Active Rank Up Challenge</div>
+            <div id="rankUpChallengeText" class="challenge-desc"></div>
+        </div>
+
+        <!-- CATEGORY NAVIGATION -->
+        <div class="category-nav">
+            <button class="category-btn active" onclick="switchCategory(1)">
+                <span class="category-name">📚 Study</span>
+                <span class="task-count" id="count-1">0</span>
+            </button>
+            <button class="category-btn" onclick="switchCategory(2)">
+                <span class="category-name">💪 Physical Health</span>
+                <span class="task-count" id="count-2">0</span>
+            </button>
+            <button class="category-btn" onclick="switchCategory(3)">
+                <span class="category-name">🎨 Creativity</span>
+                <span class="task-count" id="count-3">0</span>
+            </button>
+            <button class="category-btn" onclick="switchCategory(4)">
+                <span class="category-name">🎯 Others</span>
+                <span class="task-count" id="count-4">0</span>
+            </button>
+        </div>
+
+        <!-- TASK LIST -->
+        <div class="task-list" id="taskList"></div>
+
+        <!-- ADD TASK SECTION -->
+        <div class="add-task-section">
+            <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                <input type="text" id="taskInput" class="task-input" placeholder="Enter task name..." 
+                       onkeypress="if(event.key==='Enter') addTask()">
+                <button onclick="addTask()" class="add-btn" style="flex: 0 0 auto; width: auto; padding: 0 20px;">+ Add Task</button>
+            </div>
+            <select id="prioritySelect" class="priority-select">
+                <option value="high">🔴 High (100 pts)</option>
+                <option value="medium">🟡 Medium (50 pts)</option>
+                <option value="low">🟢 Low (30 pts)</option>
+            </select>
+        </div>
+
+        <!-- REWARD AD SECTION -->
+        <div class="reward-ad-section">
+            <button onclick="watchAd()" class="watch-ad-btn">
+                <div class="btn-icon">📺</div>
+                <div class="btn-text">Watch Ads for 7 Days Premium</div>
+                <div class="btn-subtext"><span id="adsCount">0</span>/10 ads watched</div>
+            </button>
+        </div>
+
+        <!-- RANK UP MODAL -->
+        <div id="rankUpModal" class="modal">
+            <div class="modal-content rank-up-modal">
+                <h2 class="modal-title">⚡ RANK UP! ⚡</h2>
+                <p class="modal-subtitle">A challenge has appeared to test your resolve!</p>
+                <div class="challenge-box">
+                    <p id="modalChallengeText" class="challenge-text"></p>
+                </div>
+                <button onclick="acceptRankUpChallenge()" class="accept-challenge-btn">
+                    Accept Challenge ⚔️
+                </button>
+            </div>
+        </div>
+
+        <!-- ACHIEVEMENTS SECTION -->
+        <div class="achievements-section">
+            <button onclick="toggleAchievementsPanel()" class="achievements-btn">
+                🏆 Achievements & Streaks
+            </button>
+            <div id="achievementsPanel" class="achievements-panel" style="display: none;">
+                <h3 class="panel-title">🏆 Achievements</h3>
+                <div id="achievementsList" class="achievements-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AD BANNER (FIXED BOTTOM) -->
+    <div class="ad-banner">
+        <div class="ad-placeholder">Ad Space - Banner</div>
+    </div>
+
+    <!-- INSTALL APP BUTTON -->
+    <div class="install-app">
+        <button class="install-btn" id="installBtn">📱 Install App</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+                  </html>
