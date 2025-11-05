@@ -151,9 +151,8 @@ function formatPoints(points) {
 
 // ==================== PHASE B: DISPLAY FUNCTIONS ====================
 function showIsekaiGreeting() {
-  const greeting = GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
-  setGreeting(greeting);
-  localStorage.setItem("lastGreetingDate", today);
+    const greeting = ISEKAI_GREETINGS[Math.floor(Math.random() * ISEKAI_GREETINGS.length)];
+    alert(greeting);
 }
 
 function showMotivationalNotification() {
@@ -488,4 +487,7 @@ function loadData() {
 }
 
 // START APP
-window.addEventListener('load', loadData);
+window.addEventListener('load', function() {
+    loadData();
+    showIsekaiGreeting();
+});
