@@ -150,17 +150,10 @@ function formatPoints(points) {
 }
 
 // ==================== PHASE B: DISPLAY FUNCTIONS ====================
-function showIsekaiGreeting() {
-    const today = new Date().toDateString();
-    const lastGreeting = localStorage.getItem('lastGreetingDate');
-    
-    if (lastGreeting !== today && appData.tasks) {
-        const greeting = ISEKAI_GREETINGS[Math.floor(Math.random() * ISEKAI_GREETINGS.length)];
-        setTimeout(() => {
-            alert(greeting);
-            localStorage.setItem('lastGreetingDate', today);
-        }, 800);
-    }
+function showGreetingMessage() {
+  const greeting = GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
+  setGreeting(greeting);
+  localStorage.setItem("lastGreetingDate", today);
 }
 
 function showMotivationalNotification() {
