@@ -150,7 +150,7 @@ function formatPoints(points) {
 }
 
 // ==================== PHASE B: DISPLAY FUNCTIONS ====================
-function showGreetingMessage() {
+function showIsekaiGreeting() {
   const greeting = GREETINGS[Math.floor(Math.random()*GREETINGS.length)];
   setGreeting(greeting);
   localStorage.setItem("lastGreetingDate", today);
