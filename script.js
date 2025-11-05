@@ -489,5 +489,4 @@ function loadData() {
 // START APP
 window.addEventListener('load', function() {
     loadData();
-    showIsekaiGreeting();
 });
