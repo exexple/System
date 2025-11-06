@@ -9,7 +9,8 @@ const firebaseConfig = {
     appId: "1:62028696155:web:5e6b1896e0f60eacb40d7e"
 };
 
-firebase.initializeApp(firebaseConfig);
+ // Initialize Firebase
+const app = initializeApp(firebaseConfig);
 const database = firebase.database();
 
 const RANKS = ['E', 'EE', 'EEE', 'D', 'DD', 'DDD', 'C', 'CC', 'CCC', 'B', 'BB', 'BBB', 'A', 'AA', 'AAA', 'S', 'SS', 'SSS'];
