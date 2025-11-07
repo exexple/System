@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚔️ ATHERION - Gamified Task Manager</title>
+  <!-- External CSS (don't move or rename unless you update this line) -->
+  <link rel="stylesheet" href="styles-new.css">
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Stats Header -->
+    <div class="stats-header">
+      <div class="stat-item">
+        <div class="stat-label">POINTS</div>
+        <div class="stat-value" id="totalPoints">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">LEVEL</div>
+        <div class="stat-value" id="levelDisplay">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">RANK</div>
+        <div class="stat-value rank" id="rankDisplay">E</div>
+        <div id="premiumBadge" class="premium-badge" style="display:none;">🆓 FREE</div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-text" id="progressText">0/1000</div>
+    </div>
+
+    <!-- Rank Up Challenge Box -->
+    <div id="rankUpChallengeBox" class="rank-challenge-display" style="display:none;">
+      <div class="challenge-header">🎯 Active Rank Up Challenge</div>
+      <div class="challenge-desc" id="rankUpChallengeText">Complete 5 tasks today!</div>
+    </div>
+
+    <!-- Category Navigation -->
+    <div class="category-nav">
+      <button class="category-btn active" onclick="switchCategory(1)">📚 Study</button>
+      <button class="category-btn" onclick="switchCategory(2)">💪 Physical Health</button>
+      <button class="category-btn" onclick="switchCategory(3)">🎨 Creativity</button>
+      <button class="category-btn" onclick="switchCategory(4)">🎯 Others</button>
+    </div>
+
+    <!-- Add Task Section -->
+    <div class="add-task-section">
+      <input 
+        type="text" 
+        id="taskInput" 
+        placeholder="Enter task name..." 
+        class="task-input"
+      >
+      <select id="prioritySelect" class="priority-select">
+        <option value="high">🔴 High (100 pts)</option>
+        <option value="medium" selected>🟡 Medium (50 pts)</option>
+        <option value="low">🟢 Low (30 pts)</option>
+      </select>
+      <button id="addTaskBtn" class="add-btn">+ Add Task</button>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="task-list" id="tasksContainer">
+      <!-- Tasks will be rendered here -->
+    </div>
+
+    <!-- Premium (Ad) Section -->
+    <div class="reward-ad-section">
+      <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Watch Ads for 7 Days Premium</div>
+      <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">
+        <span id="adsWatchedCount">0</span>/10 ads watched
+      </div>
+    </div>
+
+    <!-- Rank Up Button Section (Challenge) -->
+    <div class="rank-up-button-section">
+      <div class="rank-up-title">⚡ RANK UP! ⚡</div>
+      <div class="challenge-description">A challenge has appeared to test your resolve!</div>
+      <button class="rank-up-btn" onclick="document.getElementById('rankUpChallengeBox').click();">Accept Challenge ⚔️</button>
+    </div>
+
+    <!-- Achievements -->
+    <div class="achievements-section">
+      <button class="achievements-btn" onclick="toggleAchievementsPanel()">🏆 Achievements & Streaks</button>
+      <div id="achievementsPanel" class="achievements-panel" style="display:none;">
+        <div class="panel-header">🏆 Achievements</div>
+        <div id="achievementsList" class="achievements-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad Space (Banner) -->
+  <div class="ad-space">
+    <p>Ad Space - Banner</p>
+  </div>
+  <!-- App Install Banner -->
+  <div class="install-app-banner">
+    <p>📱 Install App</p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
