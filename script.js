@@ -80,6 +80,7 @@ let appData = {
   achievements: [],
   lastMotivationTime: null,
   rankLockedUntilChallenge: false
+  lifetimeTasksCompleted: 0,
 };
 
 let currentCategory = 1;
@@ -410,6 +411,9 @@ function toggleTask(index) {
   if (!task) return;
   task.isDone = !task.isDone;
   if (task.isDone) {
+    if (task.isDone && !task.doneTimestamp) {
+      appData.lifetimeTasksCompleted++;
+    }
     task.doneTimestamp = Date.now();
     appData.totalPoints += PRIORITY_POINTS[task.priority];
     showModal(`Task completed!<br><br>+${PRIORITY_POINTS[task.priority]} points earned!`, 'TASK COMPLETE', '✅');
