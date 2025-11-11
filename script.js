@@ -61,7 +61,7 @@ const ACHIEVEMENTS_LIST = [
   { id: 'points_1k', name: 'Point Collector', desc: 'Earn 1,000 points', icon: '💰', check: (data) => data.totalPoints >= 1000 },
   { id: 'points_10k', name: 'Point Master', desc: 'Earn 10,000 points', icon: '💎', check: (data) => data.totalPoints >= 10000 },
   { id: 'task_10', name: 'Quest Starter', desc: 'Complete 10 tasks', icon: '📜', check: (data) => data.tasks.filter(t => t.doneTimestamp).length >= 10 },
-  { id: 'task_50', name: 'Quest Veteran', desc: 'Complete 50 tasks', icon: '⚔️', check: (data) => data.tasks.filter(t => t.doneTimestamp).length >= 50 }
+  { id: 'task_50', name: 'Quest Veteran', desc: 'Complete 50 tasks', icon: '⚔️', check: (data) => data.lifetimeTasksCompleted >= 50 },
 ];
 
 let appData = {
