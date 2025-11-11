@@ -74,13 +74,13 @@ let appData = {
   lastAiResetDate: null,
   lastResetDate: null,
   currentRank: 0,
+  lifetimeTasksCompleted: 0,
   hasActiveRankChallenge: false,
   rankUpChallenge: null,
   rankUpChallengeProgress: 0,
   achievements: [],
   lastMotivationTime: null,
   rankLockedUntilChallenge: false
-  lifetimeTasksCompleted: 0,
 };
 
 let currentCategory = 1;
