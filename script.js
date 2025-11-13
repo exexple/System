@@ -79,6 +79,9 @@ let appData = {
   rankUpChallenge: null,
   rankUpChallengeProgress: 0,
   achievements: [],
+  currentStreak: 0,
+  lastStreakDate: null,
+  challenge3DayStreak: false,
   lastMotivationTime: null,
   rankLockedUntilChallenge: false
 };
@@ -317,6 +320,18 @@ function completeRankUpChallenge() {
   showModal(`🎉 CHALLENGE COMPLETED!<br><br>You've advanced to <strong>${RANKS[nextRankIndex]}</strong> Rank!<br><br>💎 Bonus: +${pointsNeeded + 100} points!`, 'RANK UP!', '🏆');
 }
 
+function showChallengeModal() {
+  document.getElementById('challengeModal').style.display = 'block';
+}
+document.getElementById('closeModal').onclick = function () {
+  document.getElementById('challengeModal').style.display = 'none';
+};
+window.onclick = function(event) {
+  if (event.target == document.getElementById('challengeModal')) {
+    document.getElementById('challengeModal').style.display = 'none';
+  }
+};
+
 function renderAchievements() {
   const panel = document.getElementById('achievementsList');
   if (!panel) return;
@@ -413,6 +428,8 @@ function toggleTask(index) {
   if (task.isDone) {
     if (task.isDone && !task.doneTimestamp) {
       appData.lifetimeTasksCompleted++;
+      updateStreakOnTaskComplete();
+      check3DayStreakChallenge();
     }
     task.doneTimestamp = Date.now();
     appData.totalPoints += PRIORITY_POINTS[task.priority];
@@ -425,6 +442,35 @@ function toggleTask(index) {
   }
   saveData();
   renderUI();
+}
+
+function updateStreakOnTaskComplete() {
+    const today = new Date().toDateString();
+
+    if (appData.lastStreakDate === null) {
+        appData.currentStreak = 1;
+    } else {
+        const last = new Date(appData.lastStreakDate);
+        const diff = (new Date(today) - last) / (1000 * 60 * 60 * 24);
+
+        if (diff === 1) {
+            appData.currentStreak++;
+        } else if (diff > 1) {
+            appData.currentStreak = 1; // streak broken
+        }
+        // If diff === 0, it's the same day, so don't increment streak again
+    }
+    appData.lastStreakDate = today;
+}
+
+function check3DayStreakChallenge() {
+  let currChallenge = appData.challenges.find(
+     c => c.name === "3-day streak" && !c.completed
+  );
+  if (currChallenge && appData.currentStreak >= 3) {
+    currChallenge.completed = true;
+    showChallengeModal();
+  }
 }
 
 function deleteTask(index) {
