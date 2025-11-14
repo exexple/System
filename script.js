@@ -234,27 +234,18 @@ function check3DayStreakChallenge() {
 }
 
 function checkAchievements() {
-  // First Task Achievement
-  if (appData.lifetimeTasksCompleted >= 1 && !appData.achievements.includes('firsttask')) {
-    appData.achievements.push('firsttask');  // ✅ FIX: Use array push
-    showAchievementModal('First Quest', 'Complete your first task');
-    saveAppData();
-  }
-
-  // 50 Tasks Achievement
-  if (appData.lifetimeTasksCompleted >= 50 && !appData.achievements.includes('task50')) {
-    appData.achievements.push('task50');  // ✅ FIX: Use array push
-    showAchievementModal('Quest Veteran', 'Complete 50 tasks');
-    saveAppData();
-  }
-
-  // 3-Day Streak Achievement
-  if (appData.streakDays >= 3 && !appData.achievements.includes('streakmaster')) {
-    appData.achievements.push('streakmaster');  // ✅ FIX: Use array push
-    showAchievementModal('Streak Master', 'Maintain a 3-day streak');
-    saveAppData();
-  }
+  ACHIEVEMENTSLIST.forEach((ach) => {
+    if (!appData.achievements.includes(ach.id)) {
+      if (ach.check(appData)) {
+        appData.achievements.push(ach.id);
+        showAchievementModal(ach.name, ach.desc, ach.icon);
+        saveAppData();
+      }
+    }
+  });
 }
+// This uses existing ach.check conditions in ACHIEVEMENTSLIST
+// No change to other code or logic would be needed
 
 
 function checkRankUp() {
