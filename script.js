@@ -75,6 +75,8 @@ let appData = {
   lastResetDate: null,
   currentRank: 0,
   lifetimeTasksCompleted: 0,
+  streakDays: 0,
+  lastTaskDate: null,
   hasActiveRankChallenge: false,
   rankUpChallenge: null,
   rankUpChallengeProgress: 0,
@@ -406,6 +408,44 @@ function renderTasks() {
   });
 }
 
+// ==================== STREAK TRACKING & ACHIEVEMENTS ==================== 
+
+function updateStreak() {
+  const today = new Date().toDateString();
+  const lastDate = appData.lastTaskDate ? new Date(appData.lastTaskDate).toDateString() : null;
+  
+  if (lastDate === today) {
+    return; // Already counted today
+  }
+  
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  if (lastDate === yesterday.toDateString()) {
+    appData.streakDays++;
+  } else if (lastDate !== today) {
+    appData.streakDays = 1;
+  }
+  
+  appData.lastTaskDate = new Date().toISOString();
+}
+
+function checkAchievements() {
+  ACHIEVEMENTSLIST.forEach((ach) => {
+    if (!appData.achievements.includes(ach.id)) {
+      if (ach.check(appData)) {
+        appData.achievements.push(ach.id);
+        showAchievementModal(ach.name, ach.desc, ach.icon);
+        saveAppData();
+      }
+    }
+  });
+}
+
+function showAchievementModal(name, desc, icon = '🏆') {
+  showModal(`${icon} ${desc}`, `🎉 Achievement Unlocked: ${name}`, icon);
+}
+
 function toggleTask(index) {
   const task = appData.tasks[index];
   if (!task) return;
@@ -417,6 +457,7 @@ function toggleTask(index) {
     task.doneTimestamp = Date.now();
     appData.totalPoints += PRIORITY_POINTS[task.priority];
     showModal(`Task completed!<br><br>+${PRIORITY_POINTS[task.priority]} points earned!`, 'TASK COMPLETE', '✅');
+    updateStreak();  
     checkAchievements();
     checkRankUp();
   } else {
