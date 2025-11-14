@@ -234,22 +234,28 @@ function check3DayStreakChallenge() {
 }
 
 function checkAchievements() {
-  if (appData.lifetimeTasksCompleted === 1 && !appData.achievements.firstQuest) {
-    appData.achievements.firstQuest = true;
+  // First Task Achievement
+  if (appData.lifetimeTasksCompleted >= 1 && !appData.achievements.includes('firsttask')) {
+    appData.achievements.push('firsttask');  // ✅ FIX: Use array push
     showAchievementModal('First Quest', 'Complete your first task');
     saveAppData();
   }
-  if (appData.lifetimeTasksCompleted === 50 && !appData.achievements.fiftyTasks) {
-    appData.achievements.fiftyTasks = true;
-    showAchievementModal('Task Master', 'Complete 50 tasks');
+
+  // 50 Tasks Achievement
+  if (appData.lifetimeTasksCompleted >= 50 && !appData.achievements.includes('task50')) {
+    appData.achievements.push('task50');  // ✅ FIX: Use array push
+    showAchievementModal('Quest Veteran', 'Complete 50 tasks');
     saveAppData();
   }
-  if (appData.streakDays === 3 && !appData.achievements.threeDayStreak) {
-    appData.achievements.threeDayStreak = true;
+
+  // 3-Day Streak Achievement
+  if (appData.streakDays >= 3 && !appData.achievements.includes('streakmaster')) {
+    appData.achievements.push('streakmaster');  // ✅ FIX: Use array push
     showAchievementModal('Streak Master', 'Maintain a 3-day streak');
     saveAppData();
   }
 }
+
 
 function checkRankUp() {
   const currentLevel = calculateLevel(appData.totalPoints);
