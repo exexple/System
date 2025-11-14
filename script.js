@@ -469,11 +469,21 @@ function toggleTask(index) {
 }
 
 function deleteTask(index) {
-  if (confirm('🗑️ Delete this task?')) {
-    appData.tasks.splice(index, 1);
-    saveData();
-    renderUI();
-  }
+  showModal(
+    "🗑️ Delete this task?",
+    "Confirm Delete",
+    "🗑️",
+    [
+      { text: "OK", callback: () => performDelete(index) },
+      { text: "Cancel" }
+    ]
+  );
+}
+
+function performDelete(index) {
+  appData.tasks.splice(index, 1);
+  saveData();
+  renderUI();
 }
 
 function addTask() {
