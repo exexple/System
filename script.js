@@ -469,41 +469,51 @@ function toggleTask(index) {
   renderUI();
 }
 
-function confirmDelete(message, onConfirm) {
-    // Create custom modal HTML without showing the default showModal
+function confirmDelete(message) {
+  return new Promise((resolve) => {
     const modalHTML = `
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;" id="deleteModalOverlay">
-            <div style="background: #2a2a2a; border: 2px solid #FFD700; border-radius: 10px; padding: 30px; text-align: center; max-width: 400px; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
-                <div style="font-size: 30px; margin-bottom: 15px;">🗑️</div>
-                <h2 style="color: #FFD700; margin: 15px 0;">Delete Task</h2>
-                <p style="color: #ccc; margin: 20px 0; font-size: 16px;">${message}</p>
-                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
-                    <button onclick="document.getElementById('deleteModalOverlay').remove();window._confirmDeleteHandler(false)" style="padding: 12px 40px; font-size: 16px; background-color: #999; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold;">No</button>
-                    <button onclick="document.getElementById('deleteModalOverlay').remove();window._confirmDeleteHandler(true)" style="padding: 12px 40px; font-size: 16px; background-color: #FFD700; border: none; border-radius: 5px; cursor: pointer; color: black; font-weight: bold;">Yes</button>
-                </div>
-            </div>
+      <div id="deleteModalOverlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index: 9999;">
+        <div style="background:#2a2a2a; border:2px solid #FFD700; border-radius:10px; padding:30px; text-align:center; max-width:400px; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
+          <div style="font-size: 30px; margin-bottom:15px;">🗑️</div>
+          <h2 style="color:#FFD700; margin: 15px 0;">Delete Task</h2>
+          <p style="color:#ccc; margin:20px 0; font-size:16px;">${message}</p>
+          <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+            <button id="cancelDeleteBtn" style="padding: 12px 40px; font-size:16px; background-color:#999; border:none; border-radius:5px; cursor:pointer; color:white; font-weight:bold;">No</button>
+            <button id="confirmDeleteBtn" style="padding: 12px 40px; font-size:16px; background-color:#FFD700; border:none; border-radius:5px; cursor:pointer; color:black; font-weight:bold;">Yes</button>
+          </div>
         </div>
+      </div>
     `;
-    
+
+    // Append modal to body
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    
-    window._confirmDeleteHandler = function(confirmed) {
-        if (confirmed && typeof onConfirm === 'function') {
-            onConfirm();
-            // Show success modal using your existing showModal
-            showModal('Task deleted successfully!', 'Task Deleted', '✓');
-            setTimeout(() => closeModal(), 1500);
-        }
-        window._confirmDeleteHandler = null;
-    }
+
+    // Attach event listeners
+    document.getElementById('cancelDeleteBtn').onclick = () => {
+      document.getElementById('deleteModalOverlay').remove();
+      resolve(false);
+    };
+
+    document.getElementById('confirmDeleteBtn').onclick = () => {
+      document.getElementById('deleteModalOverlay').remove();
+      resolve(true);
+    };
+  });
 }
 
-function deleteTask(index) {
-    confirmDelete("Delete this task?", function() {
-        appData.tasks.splice(index, 1);
-        saveData();
-        updateDisplay();
-    });
+async function deleteTask(index) {
+  const confirmed = await confirmDelete('Delete this task?');
+  if (confirmed) {
+    appData.tasks.splice(index, 1);
+    saveData();
+    updateDisplay();
+
+    // Delay to ensure updateDisplay finished
+    setTimeout(() => {
+      showModal('Task deleted successfully!', 'Task Deleted', '✓');
+      setTimeout(() => closeModal(), 1500);
+    }, 100);
+  }
 }
 
 function addTask() {
