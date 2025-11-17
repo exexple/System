@@ -485,10 +485,8 @@ function confirmDelete(message) {
       </div>
     `;
 
-    // Append modal to body
     document.body.insertAdjacentHTML('beforeend', modalHTML);
 
-    // Attach event listeners
     document.getElementById('cancelDeleteBtn').onclick = () => {
       document.getElementById('deleteModalOverlay').remove();
       resolve(false);
@@ -503,16 +501,31 @@ function confirmDelete(message) {
 
 async function deleteTask(index) {
   const confirmed = await confirmDelete('Delete this task?');
+  
   if (confirmed) {
+    // Delete the task
     appData.tasks.splice(index, 1);
     saveData();
     updateDisplay();
 
-    // Delay to ensure updateDisplay finished
+    // Show success modal (custom, no OK button needed)
+    const successHTML = `
+      <div id="successModalOverlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index: 9999;">
+        <div style="background:#2a2a2a; border:2px solid #FFD700; border-radius:10px; padding:40px; text-align:center; max-width:400px; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
+          <div style="font-size: 40px; margin-bottom:15px;">✓</div>
+          <h2 style="color:#FFD700; margin: 15px 0;">Task Deleted</h2>
+          <p style="color:#ccc; margin:20px 0; font-size:16px;">Task deleted successfully!</p>
+        </div>
+      </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', successHTML);
+    
+    // Auto-remove after 1.5 seconds
     setTimeout(() => {
-      showModal('Task deleted successfully!', 'Task Deleted', '✓');
-      setTimeout(() => closeModal(), 1500);
-    }, 100);
+      const overlay = document.getElementById('successModalOverlay');
+      if (overlay) overlay.remove();
+    }, 1500);
   }
 }
 
