@@ -470,25 +470,29 @@ function toggleTask(index) {
 }
 
 function confirmDelete(message, onConfirm) {
-    showModal(
-        `<div>${message}</div>
-         <div style="margin-top:20px; display: flex; gap: 15px; justify-content: center;">
-            <button onclick="closeModal();window._confirmDeleteHandler(false)" style="padding: 12px 40px; font-size: 16px; background-color: #999; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold;">No</button>
-            <button onclick="closeModal();window._confirmDeleteHandler(true)" style="padding: 12px 40px; font-size: 16px; background-color: #FFD700; border: none; border-radius: 5px; cursor: pointer; color: black; font-weight: bold;">Yes</button>
-         </div>`,
-        'Delete Task',
-        '🗑️'
-    );
+    // Create custom modal HTML without showing the default showModal
+    const modalHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 9999;" id="deleteModalOverlay">
+            <div style="background: #2a2a2a; border: 2px solid #FFD700; border-radius: 10px; padding: 30px; text-align: center; max-width: 400px; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
+                <div style="font-size: 30px; margin-bottom: 15px;">🗑️</div>
+                <h2 style="color: #FFD700; margin: 15px 0;">Delete Task</h2>
+                <p style="color: #ccc; margin: 20px 0; font-size: 16px;">${message}</p>
+                <div style="margin-top: 25px; display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="document.getElementById('deleteModalOverlay').remove();window._confirmDeleteHandler(false)" style="padding: 12px 40px; font-size: 16px; background-color: #999; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold;">No</button>
+                    <button onclick="document.getElementById('deleteModalOverlay').remove();window._confirmDeleteHandler(true)" style="padding: 12px 40px; font-size: 16px; background-color: #FFD700; border: none; border-radius: 5px; cursor: pointer; color: black; font-weight: bold;">Yes</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
     window._confirmDeleteHandler = function(confirmed) {
         if (confirmed && typeof onConfirm === 'function') {
             onConfirm();
-            // Show success modal
-            showModal(
-                `<div style="text-align: center;">Task deleted successfully!</div>`,
-                'Task Deleted',
-                '✓'
-            );
-            setTimeout(() => closeModal(), 2000);
+            // Show success modal using your existing showModal
+            showModal('Task deleted successfully!', 'Task Deleted', '✓');
+            setTimeout(() => closeModal(), 1500);
         }
         window._confirmDeleteHandler = null;
     }
