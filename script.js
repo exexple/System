@@ -469,12 +469,28 @@ function toggleTask(index) {
   renderUI();
 }
 
+function confirmDelete(message, onConfirm) {
+    showModal(
+        `<div>${message}</div>
+         <div style="margin-top:16px;">
+            <button onclick="closeModal();window._confirmDeleteHandler(true)">Yes</button>
+            <button onclick="closeModal();window._confirmDeleteHandler(false)" style="margin-left:8px;">No</button>
+         </div>`,
+        'Delete Task',
+        '🗑️'
+    );
+    window._confirmDeleteHandler = function(confirmed) {
+        if (confirmed && typeof onConfirm === 'function') onConfirm();
+        window._confirmDeleteHandler = null;
+    }
+}
+
 function deleteTask(index) {
-  if (confirm('🗑️ Delete this task?')) {
-    appData.tasks.splice(index, 1);
-    saveData();
-    renderUI();
-  }
+    confirmDelete("Delete this task?", function() {
+        appData.tasks.splice(index, 1);
+        saveData();
+        updateDisplay();
+    });
 }
 
 function addTask() {
