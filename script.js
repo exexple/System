@@ -472,15 +472,24 @@ function toggleTask(index) {
 function confirmDelete(message, onConfirm) {
     showModal(
         `<div>${message}</div>
-         <div style="margin-top:16px;">
-            <button onclick="closeModal();window._confirmDeleteHandler(true)">Yes</button>
-            <button onclick="closeModal();window._confirmDeleteHandler(false)" style="margin-left:8px;">No</button>
+         <div style="margin-top:20px; display: flex; gap: 15px; justify-content: center;">
+            <button onclick="closeModal();window._confirmDeleteHandler(false)" style="padding: 12px 40px; font-size: 16px; background-color: #999; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold;">No</button>
+            <button onclick="closeModal();window._confirmDeleteHandler(true)" style="padding: 12px 40px; font-size: 16px; background-color: #FFD700; border: none; border-radius: 5px; cursor: pointer; color: black; font-weight: bold;">Yes</button>
          </div>`,
         'Delete Task',
         '🗑️'
     );
     window._confirmDeleteHandler = function(confirmed) {
-        if (confirmed && typeof onConfirm === 'function') onConfirm();
+        if (confirmed && typeof onConfirm === 'function') {
+            onConfirm();
+            // Show success modal
+            showModal(
+                `<div style="text-align: center;">Task deleted successfully!</div>`,
+                'Task Deleted',
+                '✓'
+            );
+            setTimeout(() => closeModal(), 2000);
+        }
         window._confirmDeleteHandler = null;
     }
 }
