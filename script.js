@@ -425,6 +425,8 @@ function renderUI() {
   const rankEl = document.getElementById('rankDisplay');
   if (levelEl) levelEl.textContent = level;
   if (rankEl) rankEl.textContent = rank;
+  const streakEl = document.getElementById('streak-days'); 
+  if (streakEl) streakEl.textContent = appData.streakDays || 0; 
   const isPremium = appData.premiumStatus === 'premium' && (!appData.premiumExpiry || appData.premiumExpiry > Date.now());
   const premiumEl = document.getElementById('premiumBadge');
   if (premiumEl) {
