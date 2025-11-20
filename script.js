@@ -36,21 +36,31 @@ function checkAchievements() {
   });
 }
 
+//
+// 🔴 FIX #1: Replace the entire updateStreak function with this one.
+//
 function updateStreak() {
-  const today = new Date().toDateString();
-  if (appData.lastTaskDate !== today) {
-    if (!appData.lastTaskDate) {
-      appData.streakDays = 1;
-    } else {
-      const last = new Date(appData.lastTaskDate);
-      const now = new Date();
-      const diff = Math.floor((now - last) / 86400000);
-      if (diff === 1) appData.streakDays++;
-      else if (diff > 1) appData.streakDays = 1;
+    let streak = 0;
+    const today = new Date();
+    const uniqueDates = new Set(
+        appData.tasks
+            .filter(task => task.isDone && task.doneTimestamp)
+            .map(task => new Date(task.doneTimestamp).toDateString())
+    );
+
+    if (uniqueDates.has(today.toDateString())) {
+        streak = 1;
+        let yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+        while (uniqueDates.has(yesterday.toDateString())) {
+            streak++;
+            yesterday.setDate(yesterday.getDate() - 1);
+        }
     }
-    appData.lastTaskDate = today;
-  }
+
+    appData.streakDays = streak;
 }
+
 
 
 // ==================== STYLED MODAL SYSTEM ====================
@@ -267,14 +277,44 @@ function checkAchievements() {
   }
 }
 
+//
+// 🔴 FIX #4: Replace the entire checkRankUp function.
+//
 function checkRankUp() {
-  const currentLevel = calculateLevel(appData.totalPoints);
-  const currentRankIndex = Math.floor(currentLevel / 10);
-  if ((currentLevel % 10) === 9 && currentRankIndex < (RANKS.length - 1) && !appData.rankLockedUntilChallenge) {
-    if (!appData.hasActiveRankChallenge) {
-      generateRankUpChallenge();
+    const currentLevel = calculateLevel(appData.totalPoints);
+
+    // If rank is locked, check if the challenge is now complete.
+    if (appData.rankLockedUntilChallenge) {
+        if (isChallengeCompleted()) {
+            appData.rankLockedUntilChallenge = false; // Unlock rank
+            appData.rankUpChallenge = null; // Clear challenge
+            showModal("Rank up challenge completed! Your rank is now unlocked.");
+        } else {
+            return; // Exit if rank is locked and challenge is not done
+        }
     }
-  }
+
+    const newRankIndex = Math.floor(currentLevel / 10);
+
+    if (newRankIndex > appData.rank) {
+        if (newRankIndex < RANKS.length) {
+            // Check if we need to set a new challenge
+            if (!appData.rankLockedUntilChallenge) {
+                appData.rankLockedUntilChallenge = true;
+                generateRankUpChallenge();
+                showModal(`You must complete a rank-up challenge to reach Rank ${RANKS[newRankIndex]}!`);
+                renderRankUpChallenge();
+                saveData();
+                return; // Stop the rank-up until challenge is met
+            }
+        }
+    }
+    
+    // Update rank and level if not locked
+    if (!appData.rankLockedUntilChallenge) {
+        appData.level = currentLevel;
+        appData.rank = Math.min(newRankIndex, RANKS.length - 1);
+    }
 }
 
 function generateRankUpChallenge() {
@@ -307,38 +347,33 @@ function showRankUpModal() {
   showModal(`A challenge has appeared to test your resolve!<br><br><strong style="color:#b19cd9">${appData.rankUpChallenge}</strong>`, `RANK UP CHALLENGE - ${nextRank} RANK`, '⚡');
 }
 
+//
+// 🔴 FIX #3: Replace the entire isChallengeCompleted function.
+//
 function isChallengeCompleted() {
-  if (!appData.rankUpChallenge) return false;
-  const challenge = appData.rankUpChallenge.toLowerCase();
-  if (challenge.includes('complete 3 high-priority tasks')) {
-    const highDone = appData.tasks.filter(t => t.priority === 'high' && t.isDone && new Date(t.doneTimestamp).toDateString() === new Date().toDateString()).length;
-    return highDone >= 3;
-  }
-  if (challenge.includes('earn 200 points')) {
-    const earned = appData.tasks.filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === new Date().toDateString()).reduce((sum, t) => sum + PRIORITY_POINTS[t.priority], 0);
-    return earned >= 200;
-  }
-  if (challenge.includes('complete all tasks in one category')) {
-    const tasks = appData.tasks.filter(t => t.category === currentCategory);
-    return tasks.length > 0 && tasks.every(t => t.isDone);
-  }
-  if (challenge.includes('maintain a 3-day streak')) {
-    let streak = 0;
-    for (let i = 0; i < 3; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toDateString();
-      if (appData.tasks.some(t => t.isDone && new Date(t.doneTimestamp).toDateString() === dateStr)) {
-        streak++;
-      }
+    if (!appData.rankUpChallenge) return false;
+    const challenge = appData.rankUpChallenge.toLowerCase();
+
+    if (challenge.includes("complete 5 tasks today")) {
+        const today = new Date().toDateString();
+        const completedToday = appData.tasks.filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === today).length;
+        return completedToday >= 5;
     }
-    return streak >= 3;
-  }
-  if (challenge.includes('complete 5 tasks')) {
-    const doneToday = appData.tasks.filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === new Date().toDateString()).length;
-    return doneToday >= 5;
-  }
-  return false;
+
+    if (challenge.includes("maintain a 3-day streak")) {
+        // This relies on the new, fixed updateStreak logic
+        return appData.streakDays >= 3;
+    }
+    
+    if (challenge.includes("earn 500 points in a day")) {
+        const today = new Date().toDateString();
+        const pointsToday = appData.tasks
+            .filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === today)
+            .reduce((sum, task) => sum + PRIORITY_POINTS[task.priority], 0);
+        return pointsToday >= 500;
+    }
+
+    return false;
 }
 
 function completeRankUpChallenge() {
@@ -499,35 +534,31 @@ function confirmDelete(message) {
   });
 }
 
+//
+// 🔴 FIX #5: Replace the entire deleteTask function.
+//
 async function deleteTask(index) {
-  const confirmed = await confirmDelete('Delete this task?');
-  
-  if (confirmed) {
-    // Delete the task
-    appData.tasks.splice(index, 1);
-    saveData();
-    updateDisplay();
+    const confirmation = await showModal("Are you sure you want to delete this task?", true);
+    
+    if (confirmation) {
+        const task = appData.tasks[index];
+        if (task.isDone && task.doneTimestamp) {
+            appData.lifetimeTasksCompleted--;
+            appData.totalPoints -= PRIORITY_POINTS[task.priority];
+        }
+        appData.tasks.splice(index, 1);
+        
+        // Immediately update data and UI
+        updateStreak();
+        saveData();
+        renderTasks();
+        renderStats();
 
-    // Show success modal (custom, no OK button needed)
-    const successHTML = `
-      <div id="successModalOverlay" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index: 9999;">
-        <div style="background:#2a2a2a; border:2px solid #FFD700; border-radius:10px; padding:40px; text-align:center; max-width:400px; box-shadow: 0 0 20px rgba(255,215,0,0.5);">
-          <div style="font-size: 40px; margin-bottom:15px;">✓</div>
-          <h2 style="color:#FFD700; margin: 15px 0;">Task Deleted</h2>
-          <p style="color:#ccc; margin:20px 0; font-size:16px;">Task deleted successfully!</p>
-        </div>
-      </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', successHTML);
-    
-    // Auto-remove after 1.5 seconds
-    setTimeout(() => {
-      const overlay = document.getElementById('successModalOverlay');
-      if (overlay) overlay.remove();
-    }, 1500);
-  }
+        // Show success modal
+        showModal("Task deleted successfully!", false, 1500);
+    }
 }
+
 
 function addTask() {
   const input = document.getElementById('taskInput');
