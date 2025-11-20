@@ -537,30 +537,71 @@ function confirmDelete(message) {
 }
 
 //
-// 🔴 FIX #5: Replace the entire deleteTask function.
+// 🔴 FINAL FIX: Replace your entire deleteTask function with this.
 //
-async function deleteTask(index) {
-    const confirmation = await showModal("Are you sure you want to delete this task?", true);
-    
-    if (confirmation) {
+function deleteTask(index) {
+    // 1. Show custom Yes/No Modal
+    const modalHTML = `
+      <div id="deleteConfirmModal" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index: 10000;">
+        <div style="background:#1e1e2e; border:2px solid #FFD700; border-radius:15px; padding:30px; text-align:center; max-width:350px; box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);">
+          <div style="font-size: 40px; margin-bottom:15px;">🗑️</div>
+          <h2 style="color:#FFD700; margin: 0 0 10px 0; font-family: inherit;">Delete Task</h2>
+          <p style="color:#ccc; margin: 10px 0 25px 0; font-size:16px;">Are you sure you want to delete this task?</p>
+          <div style="display: flex; gap: 15px; justify-content: center;">
+            <button id="btnNo" style="padding: 10px 30px; font-size:16px; background:#444; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">No</button>
+            <button id="btnYes" style="padding: 10px 30px; font-size:16px; background:#FFD700; color:black; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Yes</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // 2. Handle Button Clicks
+    document.getElementById('btnNo').onclick = function() {
+        document.getElementById('deleteConfirmModal').remove();
+    };
+
+    document.getElementById('btnYes').onclick = function() {
+        document.getElementById('deleteConfirmModal').remove();
+
+        // -- PERFORM DELETION --
         const task = appData.tasks[index];
+        
+        // Deduct stats if task was completed
         if (task.isDone && task.doneTimestamp) {
             appData.lifetimeTasksCompleted--;
             appData.totalPoints -= PRIORITY_POINTS[task.priority];
+            if (appData.totalPoints < 0) appData.totalPoints = 0;
         }
+
+        // Remove from array
         appData.tasks.splice(index, 1);
-        
-        // Immediately update data and UI
+
+        // -- UPDATE UI IMMEDIATELY --
         updateStreak();
         saveData();
         renderTasks();
-        renderStats();
+        renderUI(); // <--- This was the fix!
 
-        // Show success modal
-        showModal("Task deleted successfully!", false, 1500);
-    }
+        // -- SHOW SUCCESS MESSAGE --
+        const successHTML = `
+          <div id="successModal" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index: 10001;">
+            <div style="background:#1e1e2e; border:2px solid #00ff00; border-radius:15px; padding:30px; text-align:center; max-width:300px; box-shadow: 0 0 25px rgba(0, 255, 0, 0.3);">
+              <div style="font-size: 40px; margin-bottom:15px;">✅</div>
+              <h2 style="color:#00ff00; margin:0;">Task Deleted!</h2>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', successHTML);
+
+        // Remove success message after 1.5 seconds
+        setTimeout(() => {
+            const el = document.getElementById('successModal');
+            if (el) el.remove();
+        }, 1500);
+    };
 }
-
 
 function addTask() {
   const input = document.getElementById('taskInput');
