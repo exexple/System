@@ -530,7 +530,6 @@ function toggleTask(index) {
         audio.play().catch(e => {}); 
 
         checkAchievements();
-       // checkRankUp();
     } catch (error) {
         console.error("Error in achievement/rank logic:", error);
     }
@@ -542,12 +541,20 @@ function toggleTask(index) {
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
   }
 
-  // 5. Save immediately
+  // 5. Save immediately BEFORE checkRankUp
   saveData();
   
-  // 6. Update UI
+  // 6. Update UI BEFORE checkRankUp
   renderUI();     
-  renderTasks();  
+  renderTasks();
+  
+  // 7. Check rank LAST (after everything is saved and rendered)
+  // If checkRankUp returns early, it won't affect task completion
+  try {
+      checkRankUp();
+  } catch (error) {
+      console.error("Error in rank logic:", error);
+  }
 }
 
 function confirmDelete(message) {
