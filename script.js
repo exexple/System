@@ -285,22 +285,22 @@ function checkRankUp() {
 
     // 3. Check if the Rank is ALREADY locked
     if (appData.rankLockedUntilChallenge) {
-    // Check if they passed the challenge
-    if (isChallengeCompleted()) {
-        appData.rankLockedUntilChallenge = false;
-        appData.rankUpChallenge = null;
-
-        // ACTUAL RANK UP HAPPENS HERE
-        appData.rank = potentialRankIndex;
-
-        showModal(`🎉 Challenge Completed! You are now Rank ${RANKS[appData.rank]}!`);
-        saveData();
-        renderUI();
+        // Check if they passed the challenge
+        if (isChallengeCompleted()) {
+            appData.rankLockedUntilChallenge = false;
+            appData.rankUpChallenge = null;
+            
+            // ACTUAL RANK UP HAPPENS HERE
+            appData.rank = potentialRankIndex; 
+            
+            showModal(`🎉 Challenge Completed! You are now Rank ${RANKS[appData.rank]}!`);
+            saveData();
+            renderUI();
+        }
+        // If locked and challenge not done, DO NOTHING (stay at old rank)
+        // This return should NOT affect task completion - tasks are handled in toggleTask() before this
+        return; 
     }
-    // If locked and challenge not done, stay at old rank but ALLOW TASKS TO CONTINUE
-    // Don't return here - just exit this function without updating rank
-    return; // This is OK - it only stops rank promotion, not the entire toggleTask flow
-}
 
     // 4. Check if they qualify for a NEW Rank
     // If the math says they should be a higher rank than they currently are...
@@ -530,34 +530,24 @@ function toggleTask(index) {
         audio.play().catch(e => {}); 
 
         checkAchievements();
+       // checkRankUp();
+    } catch (error) {
+        console.error("Error in achievement/rank logic:", error);
+    }
 
-} catch (error) {
-    console.error("Error in achievement/rank logic:", error);
-}
-
-// 5. Save immediately (MOVED BEFORE checkRankUp)
-saveData();
-
-// 6. Update UI (MOVED BEFORE checkRankUp)
-renderUI();
-renderTasks();
-
-// 7. Check rank up LAST (so it doesn't block saving)
-try {
-    checkRankUp();
-} catch (error) {
-    console.error("Error in rank logic:", error);
-}
-
-} else {
+  } else {
     // Handle Unchecking
-    appData.tasks[index].doneTimestamp = null;
+    appData.tasks[index].doneTimestamp = null; // Direct update
     const pointsLost = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
-    
-    saveData();
-    renderUI();
-    renderTasks();
+  }
+
+  // 5. Save immediately
+  saveData();
+  
+  // 6. Update UI
+  renderUI();     
+  renderTasks();  
 }
 
 function confirmDelete(message) {
