@@ -530,7 +530,7 @@ function toggleTask(index) {
         audio.play().catch(e => {}); 
 
         checkAchievements();
-        checkRankUp();
+       // checkRankUp();
     } catch (error) {
         console.error("Error in achievement/rank logic:", error);
     }
