@@ -298,6 +298,7 @@ function checkRankUp() {
             renderUI();
         }
         // If locked and challenge not done, DO NOTHING (stay at old rank)
+        // This return should NOT affect task completion - tasks are handled in toggleTask() before this
         return; 
     }
 
