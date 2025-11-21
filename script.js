@@ -672,16 +672,23 @@ function loadData() {
       console.error('Error parsing local data:', e);
     }
   }
-  if (USER_ID) {
+ if (typeof USER_ID !== 'undefined' && USER_ID) {
+    // FIX: Only sync if server has MORE points than local
     database.ref('users/' + USER_ID).once('value').then(snapshot => {
       if (snapshot.exists()) {
-        appData = { ...appData, ...snapshot.val() };
-        localStorage.setItem('atherion_data', JSON.stringify(appData));
-        renderUI();
+        const serverData = snapshot.val();
+        // Prevent overwrite if server data is empty or older
+        if (serverData && serverData.totalPoints > (appData.totalPoints || 0)) {
+            appData = { ...appData, ...serverData };
+            // Safety: ensure tasks is an array
+            if (!Array.isArray(appData.tasks)) appData.tasks = [];
+            localStorage.setItem('atherion_data', JSON.stringify(appData));
+            renderUI();
+            renderTasks();
+        }
       }
-    }).catch(err => console.error('Firebase load error:', err));
+    }).catch(err => console.log('Offline or Firebase error, using local data.'));
   }
-}
 
 document.addEventListener('DOMContentLoaded', () => {
   console.log('✅ Initializing Atherion...');
