@@ -499,35 +499,35 @@ function renderTasks() {
 }
 
 function toggleTask(index) {
-  const task = appData.tasks[index];
-  if (!task) return;
+  // Check if task exists
+  if (!appData.tasks[index]) return;
 
-  // Toggle the done state
-  task.isDone = !task.isDone;
+  // 1. DIRECTLY update the array (Fixes the "unchecks on refresh" bug)
+  appData.tasks[index].isDone = !appData.tasks[index].isDone;
+
+  // Convenience variable for reading properties (safe to use for reading)
+  const task = appData.tasks[index];
 
   if (task.isDone) {
-    // 1. Add Timestamp if missing (Crucial for daily challenges)
+    // 2. Add Timestamp directly to array
     if (!task.doneTimestamp) {
-       task.doneTimestamp = Date.now();
+       appData.tasks[index].doneTimestamp = Date.now();
     }
     
-    // 2. Add Points
+    // 3. Add Points directly to main state
     const pointsEarned = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = (appData.totalPoints || 0) + pointsEarned;
     
-    // 3. Safe Logic Block (Prevents crashes from stopping the save)
+    // 4. Safe Logic Block
     try {
         appData.lifetimeTasksCompleted++;
-        updateStreak(); // Update streak logic
+        updateStreak(); 
         
-        // Show success modal
         showModal(`Task completed!<br><br>+${pointsEarned} points earned!`, 'TASK COMPLETE', '✅');
         
-        // Play sound (Optional, safe to fail)
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
         audio.play().catch(e => {}); 
 
-        // Run Checks
         checkAchievements();
         checkRankUp();
     } catch (error) {
@@ -535,16 +535,18 @@ function toggleTask(index) {
     }
 
   } else {
-    // Handle Unchecking (Remove timestamp and deduct points)
-    task.doneTimestamp = null;
+    // Handle Unchecking
+    appData.tasks[index].doneTimestamp = null; // Direct update
     const pointsLost = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
   }
 
-  // 4. SAVE and RENDER (Always happens)
+  // 5. Save immediately
   saveData();
-  renderUI();
-  renderTasks();
+  
+  // 6. Update UI
+  renderUI();     
+  renderTasks();  
 }
 
 function confirmDelete(message) {
