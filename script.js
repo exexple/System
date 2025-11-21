@@ -36,32 +36,30 @@ function checkAchievements() {
   });
 }
 
-//
-// 🔴 FIX #1: Replace the entire updateStreak function with this one.
-//
 function updateStreak() {
-    let streak = 0;
-    const today = new Date();
-    const uniqueDates = new Set(
-        appData.tasks
-            .filter(task => task.isDone && task.doneTimestamp)
-            .map(task => new Date(task.doneTimestamp).toDateString())
-    );
+    const today = new Date().toDateString();
+    const lastVisit = localStorage.getItem('lastVisitDate');
 
-    if (uniqueDates.has(today.toDateString())) {
-        streak = 1;
-        let yesterday = new Date(today);
-        yesterday.setDate(today.getDate() - 1);
-        while (uniqueDates.has(yesterday.toDateString())) {
-            streak++;
-            yesterday.setDate(yesterday.getDate() - 1);
-        }
+    if (today === lastVisit) {
+        // Already visited today, do nothing
+        return;
     }
 
-    appData.streakDays = streak;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (lastVisit === yesterday.toDateString()) {
+        // Visited yesterday, increment streak
+        appData.streakDays = (appData.streakDays || 0) + 1;
+    } else {
+        // Missed a day (or new user), reset to 1
+        appData.streakDays = 1;
+    }
+
+    localStorage.setItem('lastVisitDate', today);
+    appData.lastVisit = today;
+    saveData();
 }
-
-
 
 // ==================== STYLED MODAL SYSTEM ====================
 function showModal(message, title = 'Info', icon = '') {
@@ -277,44 +275,49 @@ function checkAchievements() {
   }
 }
 
-//
-// 🔴 FIX #4: Replace the entire checkRankUp function.
-//
 function checkRankUp() {
+    // 1. Use YOUR existing dynamic math to see what rank they *should* be
+    const potentialRankIndex = calculateRank(appData.totalPoints);
     const currentLevel = calculateLevel(appData.totalPoints);
 
-    // If rank is locked, check if the challenge is now complete.
+    // 2. Update the level (Levels update automatically, only Ranks get locked)
+    appData.level = currentLevel;
+
+    // 3. Check if the Rank is ALREADY locked
     if (appData.rankLockedUntilChallenge) {
+        // Check if they passed the challenge
         if (isChallengeCompleted()) {
-            appData.rankLockedUntilChallenge = false; // Unlock rank
-            appData.rankUpChallenge = null; // Clear challenge
-            showModal("Rank up challenge completed! Your rank is now unlocked.");
-        } else {
-            return; // Exit if rank is locked and challenge is not done
+            appData.rankLockedUntilChallenge = false;
+            appData.rankUpChallenge = null;
+            
+            // ACTUAL RANK UP HAPPENS HERE
+            appData.rank = potentialRankIndex; 
+            
+            showModal(`🎉 Challenge Completed! You are now Rank ${RANKS[appData.rank]}!`);
+            saveData();
+            renderUI();
         }
+        // If locked and challenge not done, DO NOTHING (stay at old rank)
+        return; 
     }
 
-    const newRankIndex = Math.floor(currentLevel / 10);
+    // 4. Check if they qualify for a NEW Rank
+    // If the math says they should be a higher rank than they currently are...
+    if (potentialRankIndex > appData.rank) {
+        // TRIGGER THE LOCK
+        appData.rankLockedUntilChallenge = true;
+        generateRankUpChallenge();
+        showModal(`⚠️ RANK UP BLOCKED! Complete the challenge to reach Rank ${RANKS[potentialRankIndex]}`);
+        renderRankUpChallenge();
+        
+        // IMPORTANT: Do NOT update appData.rank yet. Keep them at the old rank.
+        saveData();
+        return;
+    }
 
-    if (newRankIndex > appData.rank) {
-        if (newRankIndex < RANKS.length) {
-            // Check if we need to set a new challenge
-            if (!appData.rankLockedUntilChallenge) {
-                appData.rankLockedUntilChallenge = true;
-                generateRankUpChallenge();
-                showModal(`You must complete a rank-up challenge to reach Rank ${RANKS[newRankIndex]}!`);
-                renderRankUpChallenge();
-                saveData();
-                return; // Stop the rank-up until challenge is met
-            }
-        }
-    }
-    
-    // Update rank and level if not locked
-    if (!appData.rankLockedUntilChallenge) {
-        appData.level = currentLevel;
-        appData.rank = Math.min(newRankIndex, RANKS.length - 1);
-    }
+    // 5. If staying at same rank (or handling weird edge cases), sync data
+    appData.rank = Math.min(appData.rank, potentialRankIndex); 
+    saveData();
 }
 
 function generateRankUpChallenge() {
@@ -347,34 +350,46 @@ function showRankUpModal() {
   showModal(`A challenge has appeared to test your resolve!<br><br><strong style="color:#b19cd9">${appData.rankUpChallenge}</strong>`, `RANK UP CHALLENGE - ${nextRank} RANK`, '⚡');
 }
 
-//
-// 🔴 FIX #3: Replace the entire isChallengeCompleted function.
-//
 function isChallengeCompleted() {
     if (!appData.rankUpChallenge) return false;
     const challenge = appData.rankUpChallenge.toLowerCase();
+    const today = new Date().toDateString();
 
-    if (challenge.includes("complete 5 tasks today")) {
-        const today = new Date().toDateString();
-        const completedToday = appData.tasks.filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === today).length;
+    // 1. Fix for "Complete 5 tasks today"
+    if (challenge.includes("complete 5 tasks")) {
+        // Count tasks that are DONE and were finished TODAY
+        const completedToday = appData.tasks.filter(t => {
+            if (!t.isDone || !t.doneTimestamp) return false;
+            return new Date(t.doneTimestamp).toDateString() === today;
+        }).length;
+        
         return completedToday >= 5;
     }
 
-    if (challenge.includes("maintain a 3-day streak")) {
-        // This relies on the new, fixed updateStreak logic
-        return appData.streakDays >= 3;
+    // 2. Fix for "Maintain a 3-day streak"
+    if (challenge.includes("streak")) {
+        // Checks the streak number we fixed in updateStreak()
+        return (appData.streakDays || 0) >= 3;
     }
     
-    if (challenge.includes("earn 500 points in a day")) {
-        const today = new Date().toDateString();
+    // 3. Fix for "Earn 500 points"
+    if (challenge.includes("earn 500 points")) {
         const pointsToday = appData.tasks
-            .filter(t => t.isDone && new Date(t.doneTimestamp).toDateString() === today)
-            .reduce((sum, task) => sum + PRIORITY_POINTS[task.priority], 0);
+            .filter(t => {
+                if (!t.isDone || !t.doneTimestamp) return false;
+                return new Date(t.doneTimestamp).toDateString() === today;
+            })
+            .reduce((sum, task) => {
+                // Uses your existing priority points map
+                return sum + (PRIORITY_POINTS[task.priority] || 0);
+            }, 0);
+            
         return pointsToday >= 500;
     }
 
     return false;
 }
+
 
 function completeRankUpChallenge() {
   if (!appData.hasActiveRankChallenge) return;
