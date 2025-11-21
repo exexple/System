@@ -499,54 +499,44 @@ function renderTasks() {
 }
 
 function toggleTask(index) {
-  // Check if task exists
+  // 1. Check if task exists
   if (!appData.tasks[index]) return;
 
-  // 1. DIRECTLY update the array (Fixes the "unchecks on refresh" bug)
+  // 2. DIRECTLY update the array (Crucial for saving)
   appData.tasks[index].isDone = !appData.tasks[index].isDone;
 
-  // Convenience variable for reading properties (safe to use for reading)
-  const task = appData.tasks[index];
+  const task = appData.tasks[index]; // Use this for reading only
 
   if (task.isDone) {
-    // 2. Add Timestamp directly to array
     if (!task.doneTimestamp) {
-       appData.tasks[index].doneTimestamp = Date.now();
+       appData.tasks[index].doneTimestamp = Date.now(); // Direct update
     }
     
-    // 3. Add Points directly to main state
-    const pointsEarned = PRIORITY_POINTS[task.priority] || 0;
-    appData.totalPoints = (appData.totalPoints || 0) + pointsEarned;
+    // Add Points
+    appData.totalPoints = (appData.totalPoints || 0) + (PRIORITY_POINTS[task.priority] || 0);
     
-    // 4. Safe Logic Block
+    // Validations (Wrapped in try-catch so they don't block saving)
     try {
         appData.lifetimeTasksCompleted++;
         updateStreak(); 
-        
-        showModal(`Task completed!<br><br>+${pointsEarned} points earned!`, 'TASK COMPLETE', '✅');
-        
+        showModal(`Task completed!<br><br>+${PRIORITY_POINTS[task.priority]} points earned!`, 'TASK COMPLETE', '✅');
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
         audio.play().catch(e => {}); 
-
         checkAchievements();
         checkRankUp();
-    } catch (error) {
-        console.error("Error in achievement/rank logic:", error);
-    }
+    } catch (e) { console.error(e); }
 
   } else {
-    // Handle Unchecking
+    // Undo
     appData.tasks[index].doneTimestamp = null; // Direct update
-    const pointsLost = PRIORITY_POINTS[task.priority] || 0;
-    appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
+    const points = PRIORITY_POINTS[task.priority] || 0;
+    appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - points);
   }
 
-  // 5. Save immediately
+  // 3. Save and Render
   saveData();
-  
-  // 6. Update UI
-  renderUI();     
-  renderTasks();  
+  renderUI();
+  renderTasks(); // Updates the checkboxes visually
 }
 
 function confirmDelete(message) {
@@ -657,9 +647,12 @@ function switchCategory(cat) {
 }
 
 function saveData() {
+  // 1. Sync Save (Instant)
   localStorage.setItem('atherion_data', JSON.stringify(appData));
-  if (USER_ID) {
-    database.ref('users/' + USER_ID).set(appData).catch(err => console.error('Firebase save error:', err));
+  
+  // 2. Async Save (Background)
+  if (typeof USER_ID !== 'undefined' && USER_ID && typeof database !== 'undefined') {
+    database.ref('users/' + USER_ID).set(appData).catch(err => console.error(err));
   }
 }
 
@@ -673,14 +666,20 @@ function loadData() {
     }
   }
   if (USER_ID) {
-    database.ref('users/' + USER_ID).once('value').then(snapshot => {
-      if (snapshot.exists()) {
-        appData = { ...appData, ...snapshot.val() };
-        localStorage.setItem('atherion_data', JSON.stringify(appData));
-        renderUI();
+  database.ref('users/' + USER_ID).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const serverData = snapshot.val();
+      // FIX: Only overwrite if server has MORE points (prevents reverting progress)
+      if (serverData.totalPoints > (appData.totalPoints || 0)) {
+          appData = { ...appData, ...serverData };
+          // Safety: Ensure tasks array exists
+          if (!Array.isArray(appData.tasks)) appData.tasks = []; 
+          localStorage.setItem('atherion_data', JSON.stringify(appData));
+          renderUI();
+          renderTasks(); // Re-render to show server state
       }
-    }).catch(err => console.error('Firebase load error:', err));
-  }
+    }
+  }).catch(err => console.error('Firebase load error:', err));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
