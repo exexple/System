@@ -466,6 +466,7 @@ function renderUI() {
   if (pointsEl) pointsEl.textContent = formatPoints(appData.totalPoints);
   const level = calculateLevel(appData.totalPoints);
   const rank = calculateRank(level);
+  const rankName = RANKS[rankIndex] || 'E';
   const levelEl = document.getElementById('levelDisplay');
   const rankEl = document.getElementById('rankDisplay');
   if (levelEl) levelEl.textContent = level;
