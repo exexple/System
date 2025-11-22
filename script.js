@@ -308,7 +308,6 @@ function checkRankUp() {
     // 1. Use YOUR existing dynamic math to see what rank they *should* be
     const currentLevel = calculateLevel(appData.totalPoints);
     const potentialRankIndex = calculateRank(currentLevel);
-    const currentLevel = calculateLevel(appData.totalPoints);
 
     // 2. Update the level (Levels update automatically, only Ranks get locked)
     appData.level = currentLevel;
