@@ -503,23 +503,21 @@ function toggleTask(index) {
   // Check if task exists
   if (!appData.tasks[index]) return;
 
-  // 1. DIRECTLY update the array
+  // 1. Toggle the task
   appData.tasks[index].isDone = !appData.tasks[index].isDone;
-
-  // Convenience variable for reading properties
   const task = appData.tasks[index];
 
   if (task.isDone) {
-    // 2. Add Timestamp directly to array
+    // 2. Add timestamp
     if (!task.doneTimestamp) {
        appData.tasks[index].doneTimestamp = Date.now();
     }
     
-    // 3. Add Points directly to main state
+    // 3. Add points
     const pointsEarned = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = (appData.totalPoints || 0) + pointsEarned;
     
-    // 4. Safe Logic Block
+    // 4. Update achievements/streaks
     try {
         appData.lifetimeTasksCompleted++;
         updateStreak(); 
@@ -535,32 +533,24 @@ function toggleTask(index) {
     }
 
   } else {
-    // Handle Unchecking
+    // Handle unchecking
     appData.tasks[index].doneTimestamp = null;
     const pointsLost = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
   }
 
-  // 5. Save to localStorage INSTANTLY (no waiting)
-  localStorage.setItem('atherion_data', JSON.stringify(appData));
+  // 5. Save BOTH localStorage AND Firebase together
+  saveData();
   
-  // 6. Update UI IMMEDIATELY (user sees instant feedback)
+  // 6. Update UI immediately
   renderUI();
   renderTasks();
   
-  // 7. Check rank (doesn't block anything)
+  // 7. Check rank
   try {
       checkRankUp();
   } catch (error) {
       console.error("Error in rank logic:", error);
-  }
-  
-  // 8. Save to Firebase in BACKGROUND (async, non-blocking)
-  if (USER_ID) {
-    database.ref('users/' + USER_ID)
-      .set(appData)
-      .then(() => console.log('✅ Saved to Firebase'))
-      .catch(err => console.error('❌ Firebase error:', err));
   }
 }
 
@@ -697,55 +687,36 @@ function saveData() {
 
 function loadData() {
   const local = localStorage.getItem('atherion_data');
+  let localData = null;
+  
   if (local) {
     try {
-      appData = { ...appData, ...JSON.parse(local) };
+      localData = JSON.parse(local);
+      appData = { ...appData, ...localData };
     } catch (e) {
       console.error('Error parsing local data:', e);
     }
   }
+  
   if (USER_ID) {
     database.ref('users/' + USER_ID).once('value').then(snapshot => {
       if (snapshot.exists()) {
-        appData = { ...appData, ...snapshot.val() };
-        localStorage.setItem('atherion_data', JSON.stringify(appData));
+        const firebaseData = snapshot.val();
+        
+        // SMART MERGE: Use whichever is NEWER
+        if (localData && localData.lastResetDate) {
+          // If localStorage has data, use it (it's fresher)
+          console.log('✅ Using localStorage (fresher data)');
+          // Don't overwrite, Firebase will catch up from next save
+        } else {
+          // No localStorage, use Firebase
+          appData = { ...appData, ...firebaseData };
+          localStorage.setItem('atherion_data', JSON.stringify(appData));
+          console.log('✅ Loaded from Firebase');
+        }
+        
         renderUI();
       }
     }).catch(err => console.error('Firebase load error:', err));
   }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('✅ Initializing Atherion...');
-  loadData();
-  checkMidnightReset();
-  renderUI();
-  showIsekaiGreeting();
-  setInterval(showMotivationalNotification, 30 * 60 * 1000);
-  const addTaskBtn = document.getElementById('addTaskBtn');
-  if (addTaskBtn) {
-    addTaskBtn.addEventListener('click', addTask);
-  }
-  const taskInput = document.getElementById('taskInput');
-  if (taskInput) {
-    taskInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') addTask();
-    });
-  }
-  const achievementsBtn = document.getElementById('achievementsOpenBtn');
-  if (achievementsBtn) {
-    achievementsBtn.addEventListener('click', toggleAchievementsPanel);
-  }
-  const rankUpBox = document.getElementById('rankUpChallengeBox');
-  if (rankUpBox) {
-    rankUpBox.addEventListener('click', () => {
-      if (!appData.hasActiveRankChallenge) return;
-      if (!isChallengeCompleted()) {
-        showModal(`You must finish this challenge first!<br><br><strong>"${appData.rankUpChallenge}"</strong>`, 'CHALLENGE NOT COMPLETED', '❌');
-        return;
-      }
-      completeRankUpChallenge();
-    });
-  }
-  console.log('✅ Atherion fully initialized!');
-});
