@@ -465,11 +465,12 @@ function renderUI() {
   const pointsEl = document.getElementById('totalPoints');
   if (pointsEl) pointsEl.textContent = formatPoints(appData.totalPoints);
   const level = calculateLevel(appData.totalPoints);
-  const rank = calculateRank(level);
+  const rankIndex = calculateRank(level);
+  const rankName = RANKS[rankIndex] || RANKS[0];
   const levelEl = document.getElementById('levelDisplay');
   const rankEl = document.getElementById('rankDisplay');
   if (levelEl) levelEl.textContent = level;
-  if (rankEl) rankEl.textContent = rank;
+  if (rankEl) rankEl.textContent = rankName;
   const streakEl = document.getElementById('streakCount'); 
   if (streakEl) streakEl.textContent = appData.streakDays || 0; 
   const isPremium = appData.premiumStatus === 'premium' && (!appData.premiumExpiry || appData.premiumExpiry > Date.now());
