@@ -418,6 +418,37 @@ function isChallengeCompleted() {
         return relevantTasks.every(t => t.isDone);
     }
 
+    if (challenge.includes("complete 3 high-priority tasks")) {
+        const today = new Date().toDateString();
+        const count = appData.tasks.filter(t =>
+            t.priority === "high" &&
+            t.isDone &&
+            t.doneTimestamp &&
+            new Date(t.doneTimestamp).toDateString() === today
+        ).length;
+        return count >= 3;
+    }
+
+      if (challenge.includes("earn 200 points without losing any")) {
+        const today = new Date().toDateString();
+        let pointsToday = 0;
+        let anyUnchecked = false;
+        appData.tasks.forEach(t => {
+            if (t.doneTimestamp && new Date(t.doneTimestamp).toDateString() === today) {
+                pointsToday += PRIORITY_POINTS[t.priority] || 0;
+            }
+            if (
+                t.doneTimestamp &&
+                !t.isDone &&
+                new Date(t.doneTimestamp).toDateString() === today
+            ) {
+                // If a task was un-checked today, that's a loss
+                anyUnchecked = true;
+            }
+        });
+        return pointsToday >= 200 && !anyUnchecked;
+    }
+
     return false;
 }
 
