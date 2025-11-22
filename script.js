@@ -468,29 +468,39 @@ function renderUI() {
 function renderTasks() {
   const container = document.getElementById('tasksContainer');
   if (!container) return;
+  
   const filtered = appData.tasks.filter(t => t.category === currentCategory);
   container.innerHTML = '';
+  
   if (filtered.length === 0) {
     container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">📝 No tasks yet. Add one!</p>';
     return;
   }
-  filtered.forEach((task, idx) => {
+  
+  filtered.forEach((task) => {
+    // ✅ FIX: Find the REAL index in the full array, not the filtered array
     const realIdx = appData.tasks.indexOf(task);
+    
     const taskDiv = document.createElement('div');
     taskDiv.className = `task-item ${task.isDone ? 'done' : ''} priority-${task.priority}`;
+    
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.checked = task.isDone;
-    checkbox.onchange = () => toggleTask(realIdx);
+    checkbox.onchange = () => toggleTask(realIdx);  // ✅ Use realIdx, not idx
+    
     const label = document.createElement('label');
     label.textContent = task.text;
+    
     const pointsBadge = document.createElement('span');
     pointsBadge.className = 'task-points';
     pointsBadge.textContent = `+${PRIORITY_POINTS[task.priority]}`;
+    
     const deleteBtn = document.createElement('button');
     deleteBtn.textContent = '🗑️';
     deleteBtn.className = 'delete-btn';
-    deleteBtn.onclick = () => deleteTask(realIdx);
+    deleteBtn.onclick = () => deleteTask(realIdx);  // ✅ Use realIdx, not idx
+    
     taskDiv.appendChild(checkbox);
     taskDiv.appendChild(label);
     taskDiv.appendChild(pointsBadge);
