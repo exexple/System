@@ -503,10 +503,10 @@ function toggleTask(index) {
   // Check if task exists
   if (!appData.tasks[index]) return;
 
-  // 1. DIRECTLY update the array (Fixes the "unchecks on refresh" bug)
+  // 1. DIRECTLY update the array
   appData.tasks[index].isDone = !appData.tasks[index].isDone;
 
-  // Convenience variable for reading properties (safe to use for reading)
+  // Convenience variable for reading properties
   const task = appData.tasks[index];
 
   if (task.isDone) {
@@ -536,24 +536,32 @@ function toggleTask(index) {
 
   } else {
     // Handle Unchecking
-    appData.tasks[index].doneTimestamp = null; // Direct update
+    appData.tasks[index].doneTimestamp = null;
     const pointsLost = PRIORITY_POINTS[task.priority] || 0;
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
   }
 
-  // 5. Save immediately (with proper async handling)
-  saveData().then(() => {
-      // 6. Update UI AFTER save completes
-      renderUI();     
-      renderTasks();
-      
-      // 7. Check rank LAST (after everything is saved and rendered)
-      try {
-          checkRankUp();
-      } catch (error) {
-          console.error("Error in rank logic:", error);
-      }
-  });
+  // 5. Save to localStorage INSTANTLY (no waiting)
+  localStorage.setItem('atherion_data', JSON.stringify(appData));
+  
+  // 6. Update UI IMMEDIATELY (user sees instant feedback)
+  renderUI();
+  renderTasks();
+  
+  // 7. Check rank (doesn't block anything)
+  try {
+      checkRankUp();
+  } catch (error) {
+      console.error("Error in rank logic:", error);
+  }
+  
+  // 8. Save to Firebase in BACKGROUND (async, non-blocking)
+  if (USER_ID) {
+    database.ref('users/' + USER_ID)
+      .set(appData)
+      .then(() => console.log('✅ Saved to Firebase'))
+      .catch(err => console.error('❌ Firebase error:', err));
+  }
 }
 
 function confirmDelete(message) {
