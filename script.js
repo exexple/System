@@ -541,20 +541,19 @@ function toggleTask(index) {
     appData.totalPoints = Math.max(0, (appData.totalPoints || 0) - pointsLost);
   }
 
-  // 5. Save immediately BEFORE checkRankUp
-  saveData();
-  
-  // 6. Update UI BEFORE checkRankUp
-  renderUI();     
-  renderTasks();
-  
-  // 7. Check rank LAST (after everything is saved and rendered)
-  // If checkRankUp returns early, it won't affect task completion
-  try {
-      checkRankUp();
-  } catch (error) {
-      console.error("Error in rank logic:", error);
-  }
+  // 5. Save immediately (with proper async handling)
+  saveData().then(() => {
+      // 6. Update UI AFTER save completes
+      renderUI();     
+      renderTasks();
+      
+      // 7. Check rank LAST (after everything is saved and rendered)
+      try {
+          checkRankUp();
+      } catch (error) {
+          console.error("Error in rank logic:", error);
+      }
+  });
 }
 
 function confirmDelete(message) {
@@ -665,10 +664,27 @@ function switchCategory(cat) {
 }
 
 function saveData() {
-  localStorage.setItem('atherion_data', JSON.stringify(appData));
-  if (USER_ID) {
-    database.ref('users/' + USER_ID).set(appData).catch(err => console.error('Firebase save error:', err));
-  }
+  // Return a Promise so we can wait for it
+  return new Promise((resolve, reject) => {
+    // Save to localStorage FIRST (instant, no delay)
+    localStorage.setItem('atherion_data', JSON.stringify(appData));
+    
+    // Then save to Firebase (may take time)
+    if (USER_ID) {
+      database.ref('users/' + USER_ID)
+        .set(appData)
+        .then(() => {
+          console.log('✅ Data saved to Firebase');
+          resolve(); // Success
+        })
+        .catch(err => {
+          console.error('❌ Firebase save error:', err);
+          resolve(); // Still resolve so UI updates even if Firebase fails
+        });
+    } else {
+      resolve(); // No Firebase, just resolve immediately
+    }
+  });
 }
 
 function loadData() {
