@@ -464,33 +464,50 @@ function toggleAchievementsPanel() {
 function renderUI() {
   const pointsEl = document.getElementById('totalPoints');
   if (pointsEl) pointsEl.textContent = formatPoints(appData.totalPoints);
+
+  // Level and rank
   const level = calculateLevel(appData.totalPoints);
-  const rank = calculateRank(level);
-  const rankName = RANKS[rankIndex] || 'E';
+  const rankIndex = calculateRank(level);          // numeric index: 0,1,2,...
+  const rankName  = RANKS[rankIndex] || 'E';       // display string: "E","EE",...
+
   const levelEl = document.getElementById('levelDisplay');
-  const rankEl = document.getElementById('rankDisplay');
+  const rankEl  = document.getElementById('rankDisplay');
+
   if (levelEl) levelEl.textContent = level;
-  if (rankEl)  rankEl.textContent  = rankName;
-  const streakEl = document.getElementById('streakCount'); 
-  if (streakEl) streakEl.textContent = appData.streakDays || 0; 
-  const isPremium = appData.premiumStatus === 'premium' && (!appData.premiumExpiry || appData.premiumExpiry > Date.now());
+  if (rankEl)  rankEl.textContent  = rankName;     // IMPORTANT: use rankName here
+
+  // Streak
+  const streakEl = document.getElementById('streakCount');
+  if (streakEl) streakEl.textContent = appData.streakDays || 0;
+
+  // Premium badge
+  const isPremium =
+    appData.premiumStatus === 'premium' &&
+    (!appData.premiumExpiry || appData.premiumExpiry > Date.now());
   const premiumEl = document.getElementById('premiumBadge');
   if (premiumEl) {
     premiumEl.style.display = isPremium ? 'block' : 'none';
   }
+
+  // Ads watched
   const adsCountEl = document.getElementById('adsWatchedCount');
   if (adsCountEl) {
     adsCountEl.textContent = appData.adsWatched || 0;
   }
+
+  // Level progress bar
   const progress = getCurrentLevelProgress(appData.totalPoints);
   const progressBar = document.getElementById('progressBar');
   if (progressBar) {
     progressBar.style.width = progress.percent + '%';
   }
+
   const progressText = document.getElementById('progressText');
   if (progressText) {
     progressText.textContent = `${Math.floor(progress.current)}/${progress.required}`;
   }
+
+  // Existing renders
   renderTasks();
   renderRankUpChallenge();
 }
