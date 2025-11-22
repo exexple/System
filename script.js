@@ -305,48 +305,39 @@ function checkAchievements() {
 }
 
 function checkRankUp() {
-    // 1. Use YOUR existing dynamic math to see what rank they *should* be
+    // 1. Calculate current level and possible next rank
     const currentLevel = calculateLevel(appData.totalPoints);
     const potentialRankIndex = calculateRank(currentLevel);
 
-    // 2. Update the level (Levels update automatically, only Ranks get locked)
+    // 2. Always update the level to match points
     appData.level = currentLevel;
 
-    // 3. Check if the Rank is ALREADY locked
+    // 3. If a rank lock is active, only allow promotion if challenge complete
     if (appData.rankLockedUntilChallenge) {
-        // Check if they passed the challenge
         if (isChallengeCompleted()) {
             appData.rankLockedUntilChallenge = false;
             appData.rankUpChallenge = null;
-            
-            // ACTUAL RANK UP HAPPENS HERE
-            appData.rank = potentialRankIndex; 
-            
+            appData.rank = potentialRankIndex; // Only promote on challenge complete
             showModal(`🎉 Challenge Completed! You are now Rank ${RANKS[appData.rank]}!`);
             saveData();
             renderUI();
         }
-        // If locked and challenge not done, DO NOTHING (stay at old rank)
-        // This return should NOT affect task completion - tasks are handled in toggleTask() before this
-        return; 
+        // Rank stays locked until challenge is complete
+        return;
     }
 
-    // 4. Check if they qualify for a NEW Rank
-    // If the math says they should be a higher rank than they currently are...
+    // 4. If user qualifies for a higher rank, trigger the lock and challenge
     if (potentialRankIndex > appData.rank) {
-        // TRIGGER THE LOCK
         appData.rankLockedUntilChallenge = true;
         generateRankUpChallenge();
         showModal(`⚠️ RANK UP BLOCKED! Complete the challenge to reach Rank ${RANKS[potentialRankIndex]}`);
         renderRankUpChallenge();
-        
-        // IMPORTANT: Do NOT update appData.rank yet. Keep them at the old rank.
         saveData();
         return;
     }
 
-    // 5. If staying at same rank (or handling weird edge cases), sync data
-    appData.rank = Math.min(appData.rank, potentialRankIndex); 
+    // 5. Final sync for possible demotion or to keep displayed rank accurate
+    appData.rank = Math.min(appData.rank, potentialRankIndex);
     saveData();
 }
 
@@ -415,6 +406,16 @@ function isChallengeCompleted() {
             }, 0);
             
         return pointsToday >= 500;
+    }
+
+    // 4. Fix for "Complete all tasks in one category"
+    if (challenge.includes("complete all tasks in one category")) {
+        // "Category" in your appData.tasks is a number, not a string!
+        // You probably want "complete all tasks in the CURRENT category"
+        const relevantTasks = appData.tasks.filter(t => t.category === currentCategory);
+        if (relevantTasks.length === 0) return false;
+        // Only if ALL are done:
+        return relevantTasks.every(t => t.isDone);
     }
 
     return false;
