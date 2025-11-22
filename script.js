@@ -171,8 +171,14 @@ function getPointsPerRank(rankIndex) {
 }
 
 function calculateLevel(points) {
+  // Safety check: ensure points is a valid number
+  if (isNaN(points) || points === null || points === undefined || points < 0) {
+    return 0;
+  }
+  
   let rankIndex = 0;
   let pointsUsed = 0;
+  
   for (let i = 0; i < RANKS.length; i++) {
     const pointsForThisRank = getPointsPerRank(i);
     if (pointsUsed + pointsForThisRank <= points) {
@@ -182,18 +188,41 @@ function calculateLevel(points) {
       break;
     }
   }
+  
   if (rankIndex >= RANKS.length) {
     return (RANKS.length * 10) - 1;
   }
+  
   const remainingPoints = points - pointsUsed;
   const pointsPerLevel = getPointsPerLevel(rankIndex);
+  
+  // Prevent division by zero
+  if (pointsPerLevel === 0) {
+    return (rankIndex * 10);
+  }
+
   const levelInRank = Math.floor(remainingPoints / pointsPerLevel);
-  return (rankIndex * 10) + Math.min(levelInRank, 9);
+  const finalLevel = (rankIndex * 10) + Math.min(levelInRank, 9);
+  
+  // Final safety check
+  return isNaN(finalLevel) ? 0 : finalLevel;
 }
 
 function calculateRank(level) {
+  // Safety check: ensure level is a valid number
+  if (isNaN(level) || level === null || level === undefined) {
+    return 0; // Return INDEX 0, not RANKS[0]
+  }
+  
   const rankIndex = Math.floor(level / 10);
-  return RANKS[Math.min(rankIndex, RANKS.length - 1)];
+  
+  // Safety check: ensure rankIndex is valid
+  if (isNaN(rankIndex) || rankIndex < 0) {
+    return 0;
+  }
+  
+  // Return the INDEX, not the RANK NAME
+  return Math.min(rankIndex, RANKS.length - 1);
 }
 
 function getCurrentLevelProgress(points) {
@@ -277,7 +306,8 @@ function checkAchievements() {
 
 function checkRankUp() {
     // 1. Use YOUR existing dynamic math to see what rank they *should* be
-    const potentialRankIndex = calculateRank(appData.totalPoints);
+    const currentLevel = calculateLevel(appData.totalPoints);
+    const potentialRankIndex = calculateRank(currentLevel);
     const currentLevel = calculateLevel(appData.totalPoints);
 
     // 2. Update the level (Levels update automatically, only Ranks get locked)
@@ -674,25 +704,44 @@ function switchCategory(cat) {
 }
 
 function saveData() {
-  // Return a Promise so we can wait for it
   return new Promise((resolve, reject) => {
-    // Save to localStorage FIRST (instant, no delay)
+    // 🛡️ CRITICAL FIX: Validate ALL numeric fields before saving
+    if (isNaN(appData.rank) || appData.rank === null || appData.rank === undefined) {
+      appData.rank = 0;
+    }
+    
+    if (isNaN(appData.level) || appData.level === null || appData.level === undefined) {
+      appData.level = 0;
+    }
+    
+    if (isNaN(appData.totalPoints) || appData.totalPoints === null || appData.totalPoints === undefined) {
+      appData.totalPoints = 0;
+    }
+    
+    if (isNaN(appData.streakDays) || appData.streakDays === null || appData.streakDays === undefined) {
+      appData.streakDays = 0;
+    }
+    
+    if (isNaN(appData.lifetimeTasksCompleted) || appData.lifetimeTasksCompleted === null || appData.lifetimeTasksCompleted === undefined) {
+      appData.lifetimeTasksCompleted = 0;
+    }
+    
+    // Now save with clean data
     localStorage.setItem('atherion_data', JSON.stringify(appData));
     
-    // Then save to Firebase (may take time)
     if (USER_ID) {
       database.ref('users/' + USER_ID)
         .set(appData)
         .then(() => {
-          console.log('✅ Data saved to Firebase');
-          resolve(); // Success
+          console.log('✅ Firebase save successful');
+          resolve('Success');
         })
         .catch(err => {
           console.error('❌ Firebase save error:', err);
           resolve(); // Still resolve so UI updates even if Firebase fails
         });
     } else {
-      resolve(); // No Firebase, just resolve immediately
+      resolve();
     }
   });
 }
