@@ -92,6 +92,33 @@
   </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- ==================== SCRIPT LOADING ORDER (MODULAR STRUCTURE) ==================== -->
+
+<!-- 1. FIREBASE INITIALIZATION - Must load first -->
+<script src="modules/firebase.js"></script>
+
+<!-- 2. DATA CONSTANTS & GLOBAL STATE - Depends on Firebase -->
+<script src="modules/constants.js"></script>
+
+<!-- 3. MODAL SYSTEM - Utility for all other modules -->
+<script src="modules/modal.js"></script>
+
+<!-- 4. PREMIUM & REWARDS SYSTEM - Independent logic -->
+<script src="modules/rewards.js"></script>
+
+<!-- 5. STREAK TRACKING - Handles streak logic -->
+<script src="modules/streak.js"></script>
+
+<!-- 6. ACHIEVEMENTS SYSTEM - Checks achievements -->
+<script src="modules/achievements.js"></script>
+
+<!-- 7. STATS DISPLAY - Calculates and renders stats -->
+<script src="modules/stats.js"></script>
+
+<!-- 8. TASK MANAGEMENT - Add, delete, toggle tasks -->
+<script src="modules/tasks.js"></script>
+
+<!-- 9. INITIALIZATION & EVENT LISTENERS - Ties everything together -->
+<script src="modules/app.js"></script>
 </body>
 </html>
