@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⚔️ ATHERION - Gamified Task Manager</title>
   <link rel="stylesheet" href="styles-new.css">
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
@@ -40,10 +42,11 @@
     </div>
 
     <div class="category-nav">
-      <button class="category-btn active" onclick="switchCategory(1)">📚 Study</button>
-      <button class="category-btn" onclick="switchCategory(2)">💪 Physical Health</button>
-      <button class="category-btn" onclick="switchCategory(3)">🎨 Creativity</button>
-      <button class="category-btn" onclick="switchCategory(4)">🎯 Others</button>
+      <!-- inline onclick removed; handled in app.js via data-category -->
+      <button class="category-btn active" data-category="1">📚 Study</button>
+      <button class="category-btn" data-category="2">💪 Physical Health</button>
+      <button class="category-btn" data-category="3">🎨 Creativity</button>
+      <button class="category-btn" data-category="4">🎯 Others</button>
     </div>
 
     <div class="add-task-section">
@@ -60,8 +63,11 @@
 
     <div class="reward-ad-section">
       <div style="font-size: 14px; font-weight: bold; margin-bottom: 10px;">Watch Ads for 7 Days Premium</div>
-      <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;"><span id="adsWatchedCount">0</span>/10 ads watched</div>
-      <button class="watch-ad-btn" onclick="watchAd()">
+      <div style="font-size: 12px; color: #aaa; margin-bottom: 10px;">
+        <span id="adsWatchedCount">0</span>/10 ads watched
+      </div>
+      <!-- inline onclick removed; handled in app.js -->
+      <button class="watch-ad-btn" id="watchAdBtn">
         <div class="btn-icon">📺</div>
         <div class="btn-text">Watch Ad</div>
         <div class="btn-subtext">+7 days premium</div>
@@ -77,7 +83,7 @@
     </div>
   </div>
 
-    <!-- ✅ CUSTOM MODAL FOR STYLED POPUPS -->
+  <!-- ✅ CUSTOM MODAL FOR STYLED POPUPS -->
   <div id="customModal" class="custom-modal"></div>
 
   <div class="ad-banner">
@@ -85,40 +91,40 @@
   </div>
 
   <div id="challengeModal" class="modal">
-  <div class="modal-content">
-    <span id="closeModal" class="close">&times;</span>
-    <h2>Congratulations!</h2>
-    <p id="challengeModalText">You completed a 3-day streak challenge!</p>
-  </div>
+    <div class="modal-content">
+      <span id="closeModal" class="close">&times;</span>
+      <h2>Congratulations!</h2>
+      <p id="challengeModalText">You completed a 3-day streak challenge!</p>
+    </div>
   </div>
 
   <!-- ==================== SCRIPT LOADING ORDER (MODULAR STRUCTURE) ==================== -->
 
-<!-- 1. FIREBASE INITIALIZATION - Must load first -->
-<script src="modules/firebase.js"></script>
+  <!-- 1. Configuration (Firebase credentials) -->
+  <script src="modules/config.js"></script>
 
-<!-- 2. DATA CONSTANTS & GLOBAL STATE - Depends on Firebase -->
-<script src="modules/constants.js"></script>
+  <!-- 2. DATA CONSTANTS & INITIAL STATE -->
+  <script src="modules/constants.js"></script>
 
-<!-- 3. MODAL SYSTEM - Utility for all other modules -->
-<script src="modules/modal.js"></script>
+  <!-- 3. FIREBASE INITIALIZATION / PERSISTENCE -->
+  <script src="modules/firebase.js"></script>
 
-<!-- 4. PREMIUM & REWARDS SYSTEM - Independent logic -->
-<script src="modules/rewards.js"></script>
+  <!-- 4. CENTRAL STATE MANAGEMENT -->
+  <script src="modules/state.js"></script>
 
-<!-- 5. STREAK TRACKING - Handles streak logic -->
-<script src="modules/streak.js"></script>
+  <!-- 5. MODAL SYSTEM -->
+  <script src="modules/modal.js"></script>
 
-<!-- 6. ACHIEVEMENTS SYSTEM - Checks achievements -->
-<script src="modules/achievements.js"></script>
+  <!-- 6. ACHIEVEMENTS & MOTIVATION -->
+  <script src="modules/achievements.js"></script>
 
-<!-- 7. STATS DISPLAY - Calculates and renders stats -->
-<script src="modules/stats.js"></script>
+  <!-- 7. PROGRESSION (LEVELS, RANKS, STREAK RESET, REWARDS WATCHAD) -->
+  <script src="modules/progression.js"></script>
 
-<!-- 8. TASK MANAGEMENT - Add, delete, toggle tasks -->
-<script src="modules/tasks.js"></script>
+  <!-- 8. TASK MANAGEMENT -->
+  <script src="modules/tasks.js"></script>
 
-<!-- 9. INITIALIZATION & EVENT LISTENERS - Ties everything together -->
-<script src="modules/app.js"></script>
+  <!-- 9. APP INITIALIZATION & EVENT LISTENERS -->
+  <script src="modules/app.js"></script>
 </body>
 </html>
