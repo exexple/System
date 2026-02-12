@@ -1,0 +1,84 @@
+// ============================================================
+// FIREBASE MODULE
+// ============================================================
+// Handles Firebase initialization and data persistence
+let database;
+let userRef;
+let USERID;
+/**
+	Initialize Firebase connection
+*/
+function initFirebase() {
+try {
+firebase.initializeApp(FIREBASE_CONFIG);
+database = firebase.database();
+ // Get or create user ID
+ USERID = localStorage.getItem('atherion_userid');
+ if (!USERID) {
+     USERID = `user_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+     localStorage.setItem('atherion_userid', USERID);
+ }
+ 
+ userRef = database.ref(`users/${USERID}`);
+ console.log('Firebase initialized for user:', USERID);
+
+} catch (error) {
+console.error('Firebase initialization failed:', error);
+}
+}
+/**
+	Save application state to Firebase and localStorage
+*/
+function saveData() {
+const data = State.getData();
+// Save to localStorage
+try {
+localStorage.setItem('atherionAppData', JSON.stringify(data));
+} catch (e) {
+console.error('localStorage save failed:', e);
+}
+// Save to Firebase
+if (userRef) {
+userRef.set(data).catch(err => {
+console.error('Firebase save failed:', err);
+});
+}
+}
+/**
+	Load application state from Firebase or localStorage
+*/
+function loadData(callback) {
+if (!userRef) {
+loadFromLocalStorage(callback);
+return;
+}
+userRef.once('value')
+.then(snapshot => {
+if (snapshot.exists()) {
+const data = snapshot.val();
+State.setData(data);
+callback();
+} else {
+loadFromLocalStorage(callback);
+}
+})
+.catch(err => {
+console.error('Firebase load failed:', err);
+loadFromLocalStorage(callback);
+});
+}
+/**
+	Fallback to localStorage if Firebase fails
+*/
+function loadFromLocalStorage(callback) {
+try {
+const saved = localStorage.getItem('atherionAppData');
+if (saved) {
+const data = JSON.parse(saved);
+State.setData(data);
+}
+} catch (e) {
+console.error('localStorage load failed:', e);
+}
+callback();
+}
